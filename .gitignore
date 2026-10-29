@@ -1,0 +1,16 @@
+.env
+.venv/
+node_modules/
+**/node_modules/
+.next/
+**/.next/
+coverage/
+__pycache__/
+**/__pycache__/
+.pytest_cache/
+.ruff_cache/
+*.py[cod]
+apps/api/db.sqlite3
+*.sqlite3-journal
+.DS_Store
+Thumbs.db

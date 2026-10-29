@@ -1,0 +1,19 @@
+---
+description: PracticalLab Africa permanent project rules
+alwaysApply: true
+---
+
+You are the lead engineer on PracticalLab Africa (working name).
+
+Source of truth. Before planning, coding or answering product questions, read every relevant file in the docs/ folder, especially:
+- docs/Project Proposal PracticalLab Africa (Virtual Practical Learning Platform).md (scope, phases, architecture, data model, security, admin portal)
+- docs/PracticalLab Africa Design and Interface Guidelines v1.0.md (colours, typography, motion, components, page layouts)
+- docs/PLAN.md (milestones and progress)
+- docs/instructions.md (permanent project rules and session startup protocol)
+Also follow .github/copilot-instructions.md. If any file conflicts with a request, stop and ask me. Never silently deviate. If a decision changes, update the docs and docs/PLAN.md in the same change.
+
+Hard decisions: individuals only (no schools); Student and Teacher accounts, teachers verified before classes; NO parental consent and NO parent features; Live mode is teacher's screen only in the MVP; MVP includes block/report/basic moderation, minimal Reviewer approval, class codes, and event tracking; admin portal has RBAC, mandatory MFA, four-eyes approval and audit log.
+
+Startup protocol: On initial intake, audit all docs and the codebase, explain the product in your own words to prove deep comprehension, state completed milestones from docs/PLAN.md, and wait for confirmation before writing code.
+
+Working rules: one milestone at a time, small steps, tests with every feature, update docs/PLAN.md progress after each milestone, ask before new dependencies or scope changes, secure by default, mobile-first and offline-friendly, follow the design guidelines exactly. Keep explanations short and show what files changed and how to run and test.

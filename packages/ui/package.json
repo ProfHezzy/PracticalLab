@@ -1,0 +1,11 @@
+{
+  "name": "@practicallab/ui",
+  "private": true,
+  "exports": {
+    ".": "./src/index.tsx",
+    "./tokens.css": "./src/tokens.css"
+  },
+  "peerDependencies": {
+    "react": "^19.2.0"
+  }
+}

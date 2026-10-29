@@ -1,0 +1,120 @@
+{
+  "schemaVersion": "1.1",
+  "runtimeVersion": "1.0.0",
+  "id": "filtration",
+  "title": "Filter a cloudy mixture",
+  "subject": "chemistry",
+  "version": 1,
+  "apparatus": [
+    { "id": "mixture", "type": "mixture", "label": "Sand and water mixture" },
+    { "id": "funnel", "type": "funnel", "label": "Funnel" },
+    { "id": "filter-paper", "type": "filter-paper", "label": "Filter paper" },
+    {
+      "id": "receiving-flask",
+      "type": "receiving-flask",
+      "label": "Receiving flask"
+    }
+  ],
+  "steps": [
+    {
+      "id": "fit-paper",
+      "instruction": "Fit the filter paper into the funnel.",
+      "ruleId": "fit-paper",
+      "narrationCueId": "cue-fit"
+    },
+    {
+      "id": "place-funnel",
+      "instruction": "Place the funnel in the receiving flask.",
+      "ruleId": "place-funnel",
+      "narrationCueId": "cue-place"
+    },
+    {
+      "id": "pour-mixture",
+      "instruction": "Pour the mixture slowly into the funnel.",
+      "ruleId": "pour-mixture",
+      "narrationCueId": "cue-pour"
+    }
+  ],
+  "rules": [
+    {
+      "id": "fit-paper",
+      "action": {
+        "type": "fit",
+        "apparatus": "filter-paper",
+        "target": "funnel"
+      },
+      "feedback": "The paper lines the funnel and catches the sand."
+    },
+    {
+      "id": "place-funnel",
+      "action": {
+        "type": "place",
+        "apparatus": "funnel",
+        "slot": "receiving-flask"
+      },
+      "feedback": "The flask is ready to collect the liquid."
+    },
+    {
+      "id": "pour-mixture",
+      "action": { "type": "pour", "from": "mixture", "to": "funnel" },
+      "outcomeId": "mixture-separated",
+      "feedback": "The water passes through while the sand stays in the paper."
+    }
+  ],
+  "outcomes": [
+    {
+      "id": "mixture-separated",
+      "title": "Mixture separated",
+      "description": "The liquid collects in the flask. The insoluble sand remains in the filter paper."
+    }
+  ],
+  "scoring": {
+    "maxScore": 3,
+    "hooks": [{ "id": "step-complete", "event": "correct_step", "points": 1 }]
+  },
+  "safeFailure": {
+    "message": "That step did not work yet. No harm done.",
+    "guidance": "Check the apparatus labels and try the suggested step."
+  },
+  "narration": [
+    {
+      "id": "cue-fit",
+      "text": "First, fit the folded filter paper inside the funnel.",
+      "startMs": 0,
+      "endMs": 3800
+    },
+    {
+      "id": "cue-place",
+      "text": "Next, rest the funnel in the receiving flask.",
+      "startMs": 0,
+      "endMs": 3500
+    },
+    {
+      "id": "cue-pour",
+      "text": "Pour slowly. The water passes through and the sand stays behind.",
+      "startMs": 0,
+      "endMs": 4300
+    }
+  ],
+  "captions": [
+    {
+      "id": "cue-fit",
+      "text": "Fit the folded filter paper inside the funnel.",
+      "startMs": 0,
+      "endMs": 3800
+    },
+    {
+      "id": "cue-place",
+      "text": "Rest the funnel in the receiving flask.",
+      "startMs": 0,
+      "endMs": 3500
+    },
+    {
+      "id": "cue-pour",
+      "text": "Pour slowly. Water passes through; sand stays behind.",
+      "startMs": 0,
+      "endMs": 4300
+    }
+  ],
+  "assets": []
+}

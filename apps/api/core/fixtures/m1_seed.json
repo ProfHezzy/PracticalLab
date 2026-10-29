@@ -1,0 +1,71 @@
+[
+  {
+    "model": "core.subject",
+    "pk": 1,
+    "fields": {
+      "created_at": "2026-10-18T00:00:00Z",
+      "updated_at": "2026-10-18T00:00:00Z",
+      "name": "Chemistry",
+      "code": "chem",
+      "description": "Core practical chemistry curriculum"
+    }
+  },
+  {
+    "model": "core.level",
+    "pk": 1,
+    "fields": {
+      "created_at": "2026-10-18T00:00:00Z",
+      "updated_at": "2026-10-18T00:00:00Z",
+      "stage": "SS2",
+      "description": "Senior secondary level 2"
+    }
+  },
+  {
+    "model": "core.course",
+    "pk": 1,
+    "fields": {
+      "created_at": "2026-10-18T00:00:00Z",
+      "updated_at": "2026-10-18T00:00:00Z",
+      "subject": 1,
+      "level": 1,
+      "title": "Separation techniques",
+      "description": "Practical separation methods"
+    }
+  },
+  {
+    "model": "core.schemeofwork",
+    "pk": 1,
+    "fields": {
+      "created_at": "2026-10-18T00:00:00Z",
+      "updated_at": "2026-10-18T00:00:00Z",
+      "course": 1,
+      "term": "First",
+      "title": "Practical skills",
+      "is_active": true
+    }
+  },
+  {
+    "model": "core.topic",
+    "pk": 1,
+    "fields": {
+      "created_at": "2026-10-18T00:00:00Z",
+      "updated_at": "2026-10-18T00:00:00Z",
+      "scheme": 1,
+      "title": "Filtration",
+      "description": "Separate an insoluble solid from a liquid.",
+      "order": 1
+    }
+  },
+  {
+    "model": "core.topic",
+    "pk": 2,
+    "fields": {
+      "created_at": "2026-10-18T00:00:00Z",
+      "updated_at": "2026-10-18T00:00:00Z",
+      "scheme": 1,
+      "title": "Evaporation",
+      "description": "Recover a dissolved solute by evaporation.",
+      "order": 2
+    }
+  }
+]
