@@ -19,10 +19,20 @@ export default function RegisterPage() {
   const [accountType, setAccountType] = useState<"student" | "teacher">(
     "student",
   );
+  // M3 Gate: Optional fields
+  const [dateOfBirth, setDateOfBirth] = useState("");
+  const [phone, setPhone] = useState("");
+  // M3 Gate: Recovery contact for minors
+  const [recoveryContactName, setRecoveryContactName] = useState("");
+  const [recoveryContactEmail, setRecoveryContactEmail] = useState("");
+  const [recoveryContactPhone, setRecoveryContactPhone] = useState("");
+  const [recoveryContactRelationship, setRecoveryContactRelationship] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const isMinor = dateOfBirth && new Date(dateOfBirth) > new Date(Date.now() - 18 * 365.25 * 24 * 60 * 60 * 1000);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,6 +41,14 @@ export default function RegisterPage() {
     if (!termsAccepted || !privacyAccepted) {
       setError(
         "Please accept the Terms of Service and Privacy Policy to register.",
+      );
+      return;
+    }
+
+    // If minor, require recovery contact
+    if (isMinor && !recoveryContactEmail && !recoveryContactPhone) {
+      setError(
+        "For learners under 18, a recovery contact (email or phone) is required for account recovery.",
       );
       return;
     }
@@ -46,6 +64,14 @@ export default function RegisterPage() {
         terms_accepted: termsAccepted,
         privacy_accepted: privacyAccepted,
         country: "Nigeria",
+        // M3 Gate: Optional fields
+        date_of_birth: dateOfBirth || undefined,
+        phone: phone || undefined,
+        // M3 Gate: Recovery contact for minors
+        recovery_contact_name: recoveryContactName || undefined,
+        recovery_contact_email: recoveryContactEmail || undefined,
+        recovery_contact_phone: recoveryContactPhone || undefined,
+        recovery_contact_relationship: recoveryContactRelationship || undefined,
       });
 
       if (!ok) {
@@ -236,6 +262,207 @@ export default function RegisterPage() {
               }}
             />
           </label>
+
+          {/* M3 Gate: Date of birth for age handling */}
+          <label
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "6px",
+              fontSize: "14px",
+              fontWeight: 600,
+            }}
+          >
+            Date of Birth{" "}
+            <span style={{ fontWeight: 400, color: "var(--pl-muted)" }}>
+              (optional, enables age-appropriate features)
+            </span>
+            <input
+              type="date"
+              value={dateOfBirth}
+              onChange={(e) => setDateOfBirth(e.target.value)}
+              max={new Date().toISOString().split("T")[0]}
+              style={{
+                minHeight: "44px",
+                padding: "8px 12px",
+                borderRadius: "8px",
+                border: "1px solid var(--pl-border)",
+                background: "var(--pl-surface)",
+                color: "var(--pl-text)",
+                fontSize: "16px",
+              }}
+            />
+          </label>
+
+          <label
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "6px",
+              fontSize: "14px",
+              fontWeight: 600,
+            }}
+          >
+            Phone{" "}
+            <span style={{ fontWeight: 400, color: "var(--pl-muted)" }}>
+              (optional, for SMS verification)
+            </span>
+            <input
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="+234 8XX XXX XXXX"
+              style={{
+                minHeight: "44px",
+                padding: "8px 12px",
+                borderRadius: "8px",
+                border: "1px solid var(--pl-border)",
+                background: "var(--pl-surface)",
+                color: "var(--pl-text)",
+                fontSize: "16px",
+              }}
+            />
+          </label>
+
+          {/* M3 Gate: Recovery contact for minors */}
+          {isMinor && (
+            <fieldset
+              style={{
+                border: "1px solid var(--pl-primary)",
+                borderRadius: "8px",
+                padding: "12px",
+                margin: 0,
+                background: "rgba(16, 185, 129, 0.05)",
+              }}
+            >
+              <legend
+                style={{
+                  fontSize: "13px",
+                  fontWeight: 700,
+                  padding: "0 6px",
+                  color: "var(--pl-primary)",
+                }}
+              >
+                Recovery Contact (Required for learners under 18)
+              </legend>
+              <p style={{ fontSize: "13px", color: "var(--pl-muted)", margin: "0 0 12px 0" }}>
+                A trusted adult who can help recover your account if needed.
+              </p>
+              <label
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "6px",
+                  fontSize: "14px",
+                  fontWeight: 600,
+                }}
+              >
+                Contact Name
+                <input
+                  type="text"
+                  required
+                  value={recoveryContactName}
+                  onChange={(e) => setRecoveryContactName(e.target.value)}
+                  placeholder="e.g. Mrs. Adebayo"
+                  style={{
+                    minHeight: "44px",
+                    padding: "8px 12px",
+                    borderRadius: "8px",
+                    border: "1px solid var(--pl-border)",
+                    background: "var(--pl-surface)",
+                    color: "var(--pl-text)",
+                    fontSize: "16px",
+                  }}
+                />
+              </label>
+
+              <div style={{ display: "grid", gap: "10px" }}>
+                <label
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "6px",
+                    fontSize: "14px",
+                    fontWeight: 600,
+                  }}
+                >
+                  Contact Email
+                  <input
+                    type="email"
+                    required={!recoveryContactPhone}
+                    value={recoveryContactEmail}
+                    onChange={(e) => setRecoveryContactEmail(e.target.value)}
+                    placeholder="e.g. parent@example.com"
+                    style={{
+                      minHeight: "44px",
+                      padding: "8px 12px",
+                      borderRadius: "8px",
+                      border: "1px solid var(--pl-border)",
+                      background: "var(--pl-surface)",
+                      color: "var(--pl-text)",
+                      fontSize: "16px",
+                    }}
+                  />
+                </label>
+
+                <label
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "6px",
+                    fontSize: "14px",
+                    fontWeight: 600,
+                  }}
+                >
+                  Contact Phone
+                  <input
+                    type="tel"
+                    required={!recoveryContactEmail}
+                    value={recoveryContactPhone}
+                    onChange={(e) => setRecoveryContactPhone(e.target.value)}
+                    placeholder="+234 8XX XXX XXXX"
+                    style={{
+                      minHeight: "44px",
+                      padding: "8px 12px",
+                      borderRadius: "8px",
+                      border: "1px solid var(--pl-border)",
+                      background: "var(--pl-surface)",
+                      color: "var(--pl-text)",
+                      fontSize: "16px",
+                    }}
+                  />
+                </label>
+              </div>
+
+              <label
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "6px",
+                  fontSize: "14px",
+                  fontWeight: 600,
+                }}
+              >
+                Relationship
+                <input
+                  type="text"
+                  required
+                  value={recoveryContactRelationship}
+                  onChange={(e) => setRecoveryContactRelationship(e.target.value)}
+                  placeholder="e.g. Mother, Guardian, Teacher"
+                  style={{
+                    minHeight: "44px",
+                    padding: "8px 12px",
+                    borderRadius: "8px",
+                    border: "1px solid var(--pl-border)",
+                    background: "var(--pl-surface)",
+                    color: "var(--pl-text)",
+                    fontSize: "16px",
+                  }}
+                />
+              </label>
+            </fieldset>
+          )}
 
           <label
             style={{

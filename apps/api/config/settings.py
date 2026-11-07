@@ -169,5 +169,9 @@ REST_FRAMEWORK = {
         "auth_recovery_confirm": "10/hour",
         "teacher_verification": "3/hour",
         "staff_mfa": "10/minute",
+        "email_verification": "5/hour",
+        "phone_verification": "5/hour",
+        "age_consent": "10/hour",
+        "minor_recovery": "3/hour",
     },
 }

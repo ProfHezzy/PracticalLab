@@ -1,11 +1,17 @@
 from django.urls import path
 
 from config.api.auth_views import (
+    AgeConsentView,
     AuthMeView,
+    EmailVerificationConfirmView,
+    EmailVerificationSendView,
     LoginView,
     LogoutView,
+    MinorRecoveryView,
     PasswordRecoveryConfirmView,
     PasswordRecoveryView,
+    PhoneVerificationConfirmView,
+    PhoneVerificationSendView,
     PolicyAcceptanceView,
     RegisterView,
     RoleSwitchView,
@@ -98,6 +104,37 @@ urlpatterns = [
         "teacher-verification/me",
         TeacherVerificationApplicationView.as_view(),
         name="teacher-verification-me",
+    ),
+    # M3 Gate: Email/Phone verification
+    path(
+        "auth/verification/email/send",
+        EmailVerificationSendView.as_view(),
+        name="email-verification-send",
+    ),
+    path(
+        "auth/verification/email/confirm",
+        EmailVerificationConfirmView.as_view(),
+        name="email-verification-confirm",
+    ),
+    path(
+        "auth/verification/phone/send",
+        PhoneVerificationSendView.as_view(),
+        name="phone-verification-send",
+    ),
+    path(
+        "auth/verification/phone/confirm",
+        PhoneVerificationConfirmView.as_view(),
+        name="phone-verification-confirm",
+    ),
+    path(
+        "auth/age-consent",
+        AgeConsentView.as_view(),
+        name="age-consent",
+    ),
+    path(
+        "auth/minor-recovery",
+        MinorRecoveryView.as_view(),
+        name="minor-recovery",
     ),
     # M4 Content delivery (public)
     path("content/subjects", PublicSubjectListView.as_view(), name="content-subjects"),

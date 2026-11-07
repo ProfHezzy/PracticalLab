@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, ContactShadows } from "@react-three/drei";
+import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import * as THREE from "three";
 import type {
   ExperimentAction,
@@ -416,16 +417,11 @@ function FiltrateDrips({ active }: { active: boolean }) {
   );
 }
 
-type CameraControls = {
-  target: THREE.Vector3;
-  object: THREE.Object3D;
-};
-
 export function SimulationStage3D({ definition: _definition, state, onAction }: Props) {
   const [cameraView, setCameraView] = useState<"front" | "top" | "close">(
     "front",
   );
-  const controlsRef = useRef<CameraControls | null>(null);
+  const controlsRef = useRef<OrbitControlsImpl | null>(null);
 
   const flaskPlaced =
     state.apparatusState["receiving-flask"]?.location === "workbench-left";

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import datetime
 import hashlib
 import re
 from typing import Any
@@ -110,6 +111,18 @@ def format_user_me(user: Any) -> dict[str, Any]:
         "bio": profile.bio,
         "avatar_url": profile.avatar_url,
         "onboarding_completed": profile.onboarding_completed,
+        "date_of_birth": profile.date_of_birth.isoformat() if profile.date_of_birth else None,
+        "is_minor": profile.is_minor,
+        "phone": profile.phone,
+        "email_verification_status": profile.email_verification_status,
+        "email_verified_at": profile.email_verified_at.isoformat() if profile.email_verified_at else None,
+        "phone_verification_status": profile.phone_verification_status,
+        "phone_verified_at": profile.phone_verified_at.isoformat() if profile.phone_verified_at else None,
+        "recovery_contact_name": profile.recovery_contact_name,
+        "recovery_contact_email": profile.recovery_contact_email,
+        "recovery_contact_phone": profile.recovery_contact_phone,
+        "recovery_contact_relationship": profile.recovery_contact_relationship,
+        "has_recovery_contact": profile.has_recovery_contact(),
         "student_profile": student_data,
         "teacher_profile": teacher_data,
         "preferences": {
@@ -120,6 +133,11 @@ def format_user_me(user: Any) -> dict[str, Any]:
             "profile_visibility": preferences.profile_visibility,
         },
     }
+
+
+import datetime
+
+from django.utils import timezone
 
 
 @method_decorator(csrf_protect, name="dispatch")
@@ -141,6 +159,14 @@ class RegisterView(APIView):
         country = (data.get("country") or "Nigeria").strip()
         terms_accepted = bool(data.get("terms_accepted"))
         privacy_accepted = bool(data.get("privacy_accepted"))
+        # M3 Gate: Optional fields for age/notice handling and verification
+        date_of_birth = data.get("date_of_birth")
+        phone = (data.get("phone") or "").strip()
+        # M3 Gate: Recovery contact for minors
+        recovery_contact_name = (data.get("recovery_contact_name") or "").strip()
+        recovery_contact_email = (data.get("recovery_contact_email") or "").strip().lower()
+        recovery_contact_phone = (data.get("recovery_contact_phone") or "").strip()
+        recovery_contact_relationship = (data.get("recovery_contact_relationship") or "").strip()
 
         # Validation
         if not username:
@@ -211,6 +237,29 @@ class RegisterView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        # Validate date_of_birth if provided
+        if date_of_birth:
+            try:
+                dob = datetime.date.fromisoformat(date_of_birth)
+                if dob > datetime.date.today():
+                    return Response(
+                        error_payload(
+                            "validation_error",
+                            "Date of birth cannot be in the future.",
+                            {"date_of_birth": ["Invalid date."]},
+                        ),
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+            except ValueError:
+                return Response(
+                    error_payload(
+                        "validation_error",
+                        "Invalid date format. Use YYYY-MM-DD.",
+                        {"date_of_birth": ["Invalid format."]},
+                    ),
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
         # Create user
         user = User.objects.create_user(username=username, email=email, password=password)
 
@@ -219,14 +268,26 @@ class RegisterView(APIView):
             if account_type == UserProfile.ACCOUNT_TYPE_TEACHER
             else UserProfile.MODE_STUDENT
         )
-        UserProfile.objects.create(
+        profile = UserProfile.objects.create(
             user=user,
             account_type=account_type,
             active_mode=active_mode,
             is_verified_teacher=False,
             country=country,
             onboarding_completed=False,
+            date_of_birth=dob if date_of_birth else None,
+            phone=phone,
+            phone_verification_status=UserProfile.VERIFICATION_STATUS_UNVERIFIED,
+            recovery_contact_name=recovery_contact_name,
+            recovery_contact_email=recovery_contact_email,
+            recovery_contact_phone=recovery_contact_phone,
+            recovery_contact_relationship=recovery_contact_relationship,
         )
+
+        # Record age notice for minors
+        if profile.is_minor:
+            profile.age_notice_sent_at = timezone.now()
+            profile.save(update_fields=["age_notice_sent_at", "updated_at"])
 
         # Create student or teacher capability
         if account_type == UserProfile.ACCOUNT_TYPE_STUDENT:
@@ -544,6 +605,18 @@ class UserProfileUpdateView(APIView):
             profile.avatar_url = str(data["avatar_url"])[:500]
         if "country" in data:
             profile.country = str(data["country"])[:64]
+        if "phone" in data:
+            profile.phone = str(data["phone"])[:30]
+            if not profile.phone_verification_status == UserProfile.VERIFICATION_STATUS_VERIFIED:
+                profile.phone_verification_status = UserProfile.VERIFICATION_STATUS_UNVERIFIED
+        if "recovery_contact_name" in data:
+            profile.recovery_contact_name = str(data["recovery_contact_name"])[:120]
+        if "recovery_contact_email" in data:
+            profile.recovery_contact_email = str(data["recovery_contact_email"])[:254]
+        if "recovery_contact_phone" in data:
+            profile.recovery_contact_phone = str(data["recovery_contact_phone"])[:30]
+        if "recovery_contact_relationship" in data:
+            profile.recovery_contact_relationship = str(data["recovery_contact_relationship"])[:50]
 
         profile.save()
         return Response(format_user_me(request.user), status=status.HTTP_200_OK)
@@ -910,3 +983,296 @@ class PasswordRecoveryConfirmView(APIView):
         user.set_password(new_password)
         user.save()
         return Response({"status": "password_reset_success"}, status=status.HTTP_200_OK)
+
+
+class EmailVerificationSendView(APIView):
+    """Send email verification code to the user's registered email."""
+    permission_classes = [IsAuthenticated]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "auth_recovery"
+
+    def post(self, request: Request) -> Response:
+        user = request.user
+        profile, _ = UserProfile.objects.get_or_create(user=user)
+
+        if not user.email:
+            return Response(
+                error_payload("validation_error", "No email address on file."),
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if profile.email_verification_status == UserProfile.VERIFICATION_STATUS_VERIFIED:
+            return Response(
+                {"status": "already_verified", "email": user.email},
+                status=status.HTTP_200_OK,
+            )
+
+        # Generate a 6-digit verification code
+        import secrets
+        code = f"{secrets.randbelow(1000000):06d}"
+        request.session["email_verification_code"] = code
+        request.session["email_verification_code_at"] = timezone.now().isoformat()
+        request.session.set_expiry(3600)  # 1 hour
+
+        try:
+            send_mail(
+                "Verify your email address",
+                f"Your PracticalLab Africa verification code is: {code}\n\nThis code expires in 1 hour.",
+                settings.DEFAULT_FROM_EMAIL,
+                [user.email],
+                fail_silently=False,
+            )
+        except Exception:
+            return Response(
+                error_payload("email_error", "Could not send verification email. Try again later."),
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+        return Response({"status": "verification_sent", "email": user.email}, status=status.HTTP_200_OK)
+
+
+class EmailVerificationConfirmView(APIView):
+    """Confirm email verification code."""
+    permission_classes = [IsAuthenticated]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "auth_recovery_confirm"
+
+    def post(self, request: Request) -> Response:
+        user = request.user
+        profile, _ = UserProfile.objects.get_or_create(user=user)
+        code = (request.data.get("code") or "").strip()
+
+        if not code:
+            return Response(
+                error_payload("validation_error", "Verification code is required."),
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        stored_code = request.session.get("email_verification_code")
+        stored_at = request.session.get("email_verification_code_at")
+
+        if not stored_code or stored_code != code:
+            return Response(
+                error_payload("invalid_code", "Invalid or expired verification code."),
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if stored_at:
+            from datetime import datetime
+            try:
+                code_time = datetime.fromisoformat(stored_at.replace("Z", "+00:00"))
+                if timezone.now() - code_time > datetime.timedelta(hours=1):
+                    return Response(
+                        error_payload("expired_code", "Verification code has expired."),
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+            except ValueError:
+                pass
+
+        # Mark email as verified
+        profile.email_verification_status = UserProfile.VERIFICATION_STATUS_VERIFIED
+        profile.email_verified_at = timezone.now()
+        profile.save(update_fields=["email_verification_status", "email_verified_at", "updated_at"])
+
+        # Clear session
+        request.session.pop("email_verification_code", None)
+        request.session.pop("email_verification_code_at", None)
+
+        return Response({"status": "email_verified"}, status=status.HTTP_200_OK)
+
+
+class PhoneVerificationSendView(APIView):
+    """Send phone verification code via SMS (placeholder - requires SMS provider)."""
+    permission_classes = [IsAuthenticated]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "auth_recovery"
+
+    def post(self, request: Request) -> Response:
+        user = request.user
+        profile, _ = UserProfile.objects.get_or_create(user=user)
+
+        if not profile.phone:
+            return Response(
+                error_payload("validation_error", "No phone number on file."),
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if profile.phone_verification_status == UserProfile.VERIFICATION_STATUS_VERIFIED:
+            return Response(
+                {"status": "already_verified", "phone": profile.phone},
+                status=status.HTTP_200_OK,
+            )
+
+        # Generate a 6-digit verification code
+        import secrets
+        code = f"{secrets.randbelow(1000000):06d}"
+        request.session["phone_verification_code"] = code
+        request.session["phone_verification_code_at"] = timezone.now().isoformat()
+        request.session.set_expiry(3600)  # 1 hour
+
+        # TODO: Integrate with SMS provider (Termii, Twilio, etc.)
+        # For now, return code in response for development testing
+        # In production, this would call an SMS API
+        if settings.DEBUG:
+            return Response(
+                {"status": "verification_sent", "phone": profile.phone, "dev_code": code},
+                status=status.HTTP_200_OK,
+            )
+
+        # Placeholder for SMS integration
+        return Response(
+            {"status": "verification_sent", "phone": profile.phone},
+            status=status.HTTP_200_OK,
+        )
+
+
+class PhoneVerificationConfirmView(APIView):
+    """Confirm phone verification code."""
+    permission_classes = [IsAuthenticated]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "auth_recovery_confirm"
+
+    def post(self, request: Request) -> Response:
+        user = request.user
+        profile, _ = UserProfile.objects.get_or_create(user=user)
+        code = (request.data.get("code") or "").strip()
+
+        if not code:
+            return Response(
+                error_payload("validation_error", "Verification code is required."),
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        stored_code = request.session.get("phone_verification_code")
+        stored_at = request.session.get("phone_verification_code_at")
+
+        if not stored_code or stored_code != code:
+            return Response(
+                error_payload("invalid_code", "Invalid or expired verification code."),
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if stored_at:
+            from datetime import datetime
+            try:
+                code_time = datetime.fromisoformat(stored_at.replace("Z", "+00:00"))
+                if timezone.now() - code_time > datetime.timedelta(hours=1):
+                    return Response(
+                        error_payload("expired_code", "Verification code has expired."),
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+            except ValueError:
+                pass
+
+        # Mark phone as verified
+        profile.phone_verification_status = UserProfile.VERIFICATION_STATUS_VERIFIED
+        profile.phone_verified_at = timezone.now()
+        profile.save(update_fields=["phone_verification_status", "phone_verified_at", "updated_at"])
+
+        # Clear session
+        request.session.pop("phone_verification_code", None)
+        request.session.pop("phone_verification_code_at", None)
+
+        return Response({"status": "phone_verified"}, status=status.HTTP_200_OK)
+
+
+class AgeConsentView(APIView):
+    """Record age consent for minor users."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request: Request) -> Response:
+        user = request.user
+        profile, _ = UserProfile.objects.get_or_create(user=user)
+
+        if not profile.is_minor:
+            return Response(
+                error_payload("validation_error", "Age consent only applies to minor accounts."),
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if profile.age_consent_recorded_at:
+            return Response(
+                {"status": "already_recorded", "consented_at": profile.age_consent_recorded_at.isoformat()},
+                status=status.HTTP_200_OK,
+            )
+
+        consent_given = bool(request.data.get("consent"))
+        if not consent_given:
+            return Response(
+                error_payload("validation_error", "Consent must be given."),
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        profile.age_consent_recorded_at = timezone.now()
+        profile.save(update_fields=["age_consent_recorded_at", "updated_at"])
+
+        return Response({"status": "consent_recorded"}, status=status.HTTP_200_OK)
+
+
+class MinorRecoveryView(APIView):
+    """Account recovery for minors using their recovery contact."""
+    authentication_classes = []
+    permission_classes = [AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "auth_recovery"
+
+    def post(self, request: Request) -> Response:
+        identifier = (request.data.get("identifier") or "").strip()
+        contact_type = (request.data.get("contact_type") or "").strip()  # "email" or "phone"
+        contact_value = (request.data.get("contact_value") or "").strip().lower()
+
+        if not identifier or not contact_type or not contact_value:
+            return Response(
+                error_payload("validation_error", "Identifier, contact_type, and contact_value are required."),
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if contact_type not in ("email", "phone"):
+            return Response(
+                error_payload("validation_error", "contact_type must be 'email' or 'phone'."),
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Look up user
+        matched_user = (
+            User.objects.filter(username__iexact=identifier).first()
+            or User.objects.filter(email__iexact=identifier).first()
+        )
+
+        response_payload = {
+            "status": "recovery_initiated",
+            "message": "If a minor account exists with matching recovery contact, instructions have been sent.",
+        }
+
+        if matched_user:
+            profile, _ = UserProfile.objects.get_or_create(user=matched_user)
+
+            # Only allow recovery for minors
+            if profile.is_minor:
+                if contact_type == "email" and profile.recovery_contact_email.lower() == contact_value:
+                    # Send recovery email to recovery contact
+                    try:
+                        token = default_token_generator.make_token(matched_user)
+                        base_url = getattr(settings, "PUBLIC_WEB_URL", "http://localhost:3000").rstrip("/")
+                        reset_url = f"{base_url}/auth/recovery/confirm?uid={matched_user.pk}&token={token}"
+                        send_mail(
+                            "PracticalLab Africa - Minor Account Recovery",
+                            (
+                                f"A recovery request was made for minor account '{matched_user.username}'.\n\n"
+                                f"Use this link to reset the password. It expires when used or when a "
+                                f"new reset link is issued:\n\n{reset_url}\n\n"
+                                "If you did not request this, ignore this message."
+                            ),
+                            settings.DEFAULT_FROM_EMAIL,
+                            [profile.recovery_contact_email],
+                            fail_silently=False,
+                        )
+                    except Exception:
+                        pass
+
+                elif contact_type == "phone" and profile.recovery_contact_phone == contact_value:
+                    # TODO: Send SMS to recovery contact
+                    # For now, just log (production needs SMS integration)
+                    pass
+
+        return Response(response_payload, status=status.HTTP_200_OK)

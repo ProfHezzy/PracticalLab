@@ -27,6 +27,13 @@ class UserProfile(TimestampedModel):
         (MODE_TEACHER, "Teacher mode"),
     ]
 
+    VERIFICATION_STATUS_UNVERIFIED = "unverified"
+    VERIFICATION_STATUS_VERIFIED = "verified"
+    VERIFICATION_STATUS_CHOICES = [
+        (VERIFICATION_STATUS_UNVERIFIED, "Unverified"),
+        (VERIFICATION_STATUS_VERIFIED, "Verified"),
+    ]
+
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profile"
     )
@@ -39,12 +46,47 @@ class UserProfile(TimestampedModel):
     bio = models.TextField(blank=True)
     avatar_url = models.URLField(blank=True)
     onboarding_completed = models.BooleanField(default=False)
+    # M3 Gate: Email/phone verification
+    email_verification_status = models.CharField(
+        max_length=20, choices=VERIFICATION_STATUS_CHOICES, default=VERIFICATION_STATUS_UNVERIFIED
+    )
+    email_verified_at = models.DateTimeField(null=True, blank=True)
+    phone = models.CharField(max_length=30, blank=True)
+    phone_verification_status = models.CharField(
+        max_length=20, choices=VERIFICATION_STATUS_CHOICES, default=VERIFICATION_STATUS_UNVERIFIED
+    )
+    phone_verified_at = models.DateTimeField(null=True, blank=True)
+    # M3 Gate: Age/notice handling for minors
+    date_of_birth = models.DateField(null=True, blank=True)
+    age_notice_sent_at = models.DateTimeField(null=True, blank=True)
+    age_consent_recorded_at = models.DateTimeField(null=True, blank=True)
+    # M3 Gate: Recovery contact for minors (guardian/alternative)
+    recovery_contact_name = models.CharField(max_length=120, blank=True)
+    recovery_contact_email = models.EmailField(blank=True)
+    recovery_contact_phone = models.CharField(max_length=30, blank=True)
+    recovery_contact_relationship = models.CharField(max_length=50, blank=True)
 
     class Meta:
         indexes = [models.Index(fields=["account_type", "is_verified_teacher"])]
 
     def __str__(self) -> str:
         return f"{self.user.username} ({self.account_type})"
+
+    @property
+    def is_minor(self) -> bool:
+        """Check if user is under 18 based on date_of_birth."""
+        if not self.date_of_birth:
+            return False
+        from datetime import date
+        today = date.today()
+        age = today.year - self.date_of_birth.year - (
+            (today.month, today.day) < (self.date_of_birth.month, self.date_of_birth.day)
+        )
+        return age < 18
+
+    def has_recovery_contact(self) -> bool:
+        """Check if minor has a recovery contact configured."""
+        return bool(self.recovery_contact_email or self.recovery_contact_phone)
 
 
 class StudentProfile(TimestampedModel):

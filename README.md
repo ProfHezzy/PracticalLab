@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # PracticalLab Africa
 
 PracticalLab Africa is a mobile-first virtual practical learning platform. This workspace is being built milestone by milestone under [`docs/PLAN.md`](docs/PLAN.md).
@@ -56,3 +57,6 @@ The API test suite uses SQLite by default. Compose uses PostgreSQL and Redis. St
 - [M0 decision record](docs/decisions/0001-m0-foundation.md)
 
 © Hezekiah Olawale Ojenike / MINDSET INFORMATION TECHNOLOGY LTD.
+=======
+# PracticalLab
+>>>>>>> 6014fdff3ec89a286cb8780a0e4d1d5de3901773
