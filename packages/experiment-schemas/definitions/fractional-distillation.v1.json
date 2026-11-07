@@ -1,0 +1,111 @@
+{
+  "schemaVersion": "1.1",
+  "runtimeVersion": "1.0.0",
+  "id": "fractional-distillation",
+  "title": "Fractional distillation of alcohol and water",
+  "subject": "chemistry",
+  "version": 1,
+  "apparatus": [
+    { "id": "beaker", "type": "beaker", "label": "Distillation flask" },
+    { "id": "funnel", "type": "funnel", "label": "Fractionating column" },
+    { "id": "receiving-flask", "type": "receiving-flask", "label": "Receiving flask" },
+    { "id": "heat-source", "type": "heat-source", "label": "Heat source" },
+    { "id": "mixture", "type": "mixture", "label": "Alcohol-water mixture" }
+  ],
+  "steps": [
+    {
+      "id": "fill-flask",
+      "instruction": "Pour the alcohol-water mixture into the distillation flask.",
+      "ruleId": "pour-mixture",
+      "narrationCueId": "cue-fill"
+    },
+    {
+      "id": "setup-column",
+      "instruction": "Set up the fractionating column above the flask.",
+      "ruleId": "setup-column",
+      "narrationCueId": "cue-column"
+    },
+    {
+      "id": "collect-fraction",
+      "instruction": "Heat and collect the first fraction at ~78°C in the receiving flask.",
+      "ruleId": "collect-fraction",
+      "narrationCueId": "cue-collect"
+    }
+  ],
+  "rules": [
+    {
+      "id": "pour-mixture",
+      "action": { "type": "pour", "from": "mixture", "to": "beaker" },
+      "feedback": "The alcohol-water mixture is in the distillation flask."
+    },
+    {
+      "id": "setup-column",
+      "action": { "type": "place", "apparatus": "funnel", "slot": "beaker" },
+      "feedback": "The fractionating column provides multiple condensation-vaporization cycles."
+    },
+    {
+      "id": "collect-fraction",
+      "action": { "type": "place", "apparatus": "mixture", "slot": "receiving-flask" },
+      "outcomeId": "fractions-separated",
+      "feedback": "Ethanol (boiling at 78°C) collects first as the first fraction."
+    }
+  ],
+  "outcomes": [
+    {
+      "id": "fractions-separated",
+      "title": "Fractions separated",
+      "description": "Ethanol-rich vapor collected first, followed by water. The column allows separation of liquids with close boiling points."
+    }
+  ],
+  "scoring": {
+    "maxScore": 3,
+    "hooks": [
+      { "id": "step-complete", "event": "correct_step", "points": 1 }
+    ]
+  },
+  "safeFailure": {
+    "message": "Check the temperature and collection points.",
+    "guidance": "Ethanol boils at ~78°C, water at 100°C. Switch flasks at the right temperature."
+  },
+  "narration": [
+    {
+      "id": "cue-fill",
+      "text": "Pour the alcohol-water mixture into the distillation flask. The mixture fills the flask about three-quarters full.",
+      "startMs": 0,
+      "endMs": 3600
+    },
+    {
+      "id": "cue-column",
+      "text": "Set up the fractionating column above the flask. The column is packed with glass beads to increase surface area.",
+      "startMs": 0,
+      "endMs": 3800
+    },
+    {
+      "id": "cue-collect",
+      "text": "Heat gently. The temperature will rise to 78°C as ethanol vaporizes first. Collect this first fraction.",
+      "startMs": 0,
+      "endMs": 4200
+    }
+  ],
+  "captions": [
+    {
+      "id": "cue-fill",
+      "text": "Pour the alcohol-water mixture into the distillation flask. The mixture fills the flask about three-quarters full.",
+      "startMs": 0,
+      "endMs": 3600
+    },
+    {
+      "id": "cue-column",
+      "text": "Set up the fractionating column above the flask. The column is packed with glass beads to increase surface area.",
+      "startMs": 0,
+      "endMs": 3800
+    },
+    {
+      "id": "cue-collect",
+      "text": "Heat gently. The temperature will rise to 78°C as ethanol vaporizes first. Collect this first fraction.",
+      "startMs": 0,
+      "endMs": 4200
+    }
+  ],
+  "assets": []
+}

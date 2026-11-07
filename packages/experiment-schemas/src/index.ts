@@ -573,3 +573,596 @@ export const filtrationDefinition: ExperimentDefinition = {
   ],
   assets: [],
 };
+
+export const evaporationDefinition: ExperimentDefinition = {
+  schemaVersion: EXPERIMENT_SCHEMA_VERSION,
+  runtimeVersion: EXPERIMENT_RUNTIME_VERSION,
+  id: "evaporation",
+  title: "Evaporate a dissolved solute",
+  subject: "chemistry",
+  version: 1,
+  apparatus: [
+    { id: "beaker", type: "beaker", label: "Evaporating basin" },
+    { id: "heat-source", type: "heat-source", label: "Heat source" },
+    { id: "mixture", type: "mixture", label: "Salt solution" }
+  ],
+  steps: [
+    {
+      id: "pour-solution",
+      instruction: "Pour the salt solution into the evaporating basin.",
+      ruleId: "pour-solution",
+      narrationCueId: "cue-pour"
+    },
+    {
+      id: "position-basin",
+      instruction: "Set up the tripod, gauze, and place the basin above the heat source.",
+      ruleId: "position-basin",
+      narrationCueId: "cue-position"
+    },
+    {
+      id: "heat-solution",
+      instruction: "Heat gently until water evaporates and salt crystals form.",
+      ruleId: "heat-solution",
+      narrationCueId: "cue-heat"
+    }
+  ],
+  rules: [
+    {
+      id: "pour-solution",
+      action: { "type": "pour", "from": "mixture", "to": "beaker" },
+      feedback: "The salt solution fills the evaporating basin."
+    },
+    {
+      id: "position-basin",
+      action: { "type": "place", "apparatus": "heat-source", "slot": "workbench-left" },
+      feedback: "The heat source is positioned safely below the basin."
+    },
+    {
+      id: "heat-solution",
+      action: { "type": "place", "apparatus": "mixture", "slot": "beaker" },
+      outcomeId: "salt-recovered",
+      feedback: "The water evaporates as vapor, leaving behind dry salt crystals."
+    }
+  ],
+  outcomes: [
+    {
+      id: "salt-recovered",
+      title: "Salt recovered",
+      description: "The water has completely evaporated, leaving dry salt crystals in the basin."
+    }
+  ],
+  scoring: {
+    "maxScore": 3,
+    "hooks": [{ "id": "step-complete", "event": "correct_step", "points": 1 }]
+  },
+  safeFailure: {
+    message: "Continue the heating carefully.",
+    guidance: "Ensure good ventilation and use appropriate heat settings."
+  },
+  narration: [
+    {
+      id: "cue-pour",
+      text: "Pour the salt solution into the evaporating basin. The solution should fill about two thirds of the basin.",
+      startMs: 0,
+      endMs: 3200
+    },
+    {
+      id: "cue-position",
+      text: "Set up a tripod with gauze above your heat source. Place the basin gently on the gauze.",
+      startMs: 0,
+      endMs: 3400
+    },
+    {
+      id: "cue-heat",
+      text: "Heat gently with a steady flame. The salt crystals will begin to form as water evaporates.",
+      startMs: 0,
+      endMs: 3800
+    }
+  ],
+  captions: [
+    {
+      id: "cue-pour",
+      text: "Pour the salt solution into the evaporating basin. The solution should fill about two thirds of the basin.",
+      startMs: 0,
+      endMs: 3200
+    },
+    {
+      id: "cue-position",
+      text: "Set up a tripod with gauze above your heat source. Place the basin gently on the gauze.",
+      startMs: 0,
+      endMs: 3400
+    },
+    {
+      id: "cue-heat",
+      text: "Heat gently with a steady flame. The salt crystals will begin to form as water evaporates.",
+      startMs: 0,
+      endMs: 3800
+    }
+  ],
+  assets: []
+};
+
+export const simpleDistillationDefinition: ExperimentDefinition = {
+  schemaVersion: EXPERIMENT_SCHEMA_VERSION,
+  runtimeVersion: EXPERIMENT_RUNTIME_VERSION,
+  id: "simple-distillation",
+  title: "Distill a liquid from a solution",
+  subject: "chemistry",
+  version: 1,
+  apparatus: [
+    { id: "beaker", type: "beaker", label: "Distillation flask" },
+    { id: "funnel", type: "funnel", label: "Liebig condenser" },
+    { id: "receiving-flask", type: "receiving-flask", label: "Receiving flask" },
+    { id: "heat-source", type: "heat-source", label: "Heat source" },
+    { id: "mixture", type: "mixture", label: "Ink solution" }
+  ],
+  steps: [
+    {
+      id: "setup-flask",
+      instruction: "Pour the ink solution into the distillation flask.",
+      ruleId: "pour-solution",
+      narrationCueId: "cue-pour"
+    },
+    {
+      id: "connect-condenser",
+      instruction: "Connect the condenser with cold water flowing in at the lower end.",
+      ruleId: "connect-condenser",
+      narrationCueId: "cue-connect"
+    },
+    {
+      id: "place-thermometer",
+      instruction: "Place the receiving flask under the condenser outlet.",
+      ruleId: "place-receiver",
+      narrationCueId: "cue-place"
+    },
+    {
+      id: "heat-and-collect",
+      instruction: "Heat gently and collect the clear distillate.",
+      ruleId: "distill",
+      narrationCueId: "cue-distill"
+    }
+  ],
+  rules: [
+    {
+      id: "pour-solution",
+      action: { "type": "pour", "from": "mixture", "to": "beaker" },
+      feedback: "The ink solution fills the distillation flask."
+    },
+    {
+      id: "connect-condenser",
+      action: { "type": "place", "apparatus": "funnel", "slot": "beaker" },
+      feedback: "The condenser is connected with water flow entering at the bottom."
+    },
+    {
+      id: "place-receiver",
+      action: { "type": "place", "apparatus": "receiving-flask", "slot": "bench-right" },
+      feedback: "The receiving flask is positioned to collect the distillate."
+    },
+    {
+      id: "distill",
+      action: { "type": "place", "apparatus": "mixture", "slot": "funnel" },
+      outcomeId: "water-distilled",
+      feedback: "Water vapor travels through the condenser and condenses in the receiving flask."
+    }
+  ],
+  outcomes: [
+    {
+      id: "water-distilled",
+      title: "Water distilled",
+      description: "Clear water (distillate) collects in the receiving flask while ink residue remains in the distillation flask."
+    }
+  ],
+  scoring: {
+    "maxScore": 4,
+    "hooks": [{ "id": "step-complete", "event": "correct_step", "points": 1 }]
+  },
+  safeFailure: {
+    message: "Check your setup and try again.",
+    guidance: "Ensure condenser water is flowing before heating and the receiving flask is positioned correctly."
+  },
+  narration: [
+    {
+      id: "cue-pour",
+      text: "Pour the ink solution into the distillation flask. Fill it about three quarters full.",
+      startMs: 0,
+      endMs: 3400
+    },
+    {
+      id: "cue-connect",
+      text: "Connect the Liebig condenser. Cold water should enter at the bottom and exit at the top.",
+      startMs: 0,
+      endMs: 3600
+    },
+    {
+      id: "cue-place",
+      text: "Place the receiving flask under the condenser outlet to catch the distillate.",
+      startMs: 0,
+      endMs: 3200
+    },
+    {
+      id: "cue-distill",
+      text: "Heat gently. Watch for the thermometer to reach 100 degrees Celsius. Water vapor will travel through the condenser.",
+      startMs: 0,
+      endMs: 4000
+    }
+  ],
+  captions: [
+    {
+      id: "cue-pour",
+      text: "Pour the ink solution into the distillation flask. Fill it about three quarters full.",
+      startMs: 0,
+      endMs: 3400
+    },
+    {
+      id: "cue-connect",
+      text: "Connect the Liebig condenser. Cold water should enter at the bottom and exit at the top.",
+      startMs: 0,
+      endMs: 3600
+    },
+    {
+      id: "cue-place",
+      text: "Place the receiving flask under the condenser outlet to catch the distillate.",
+      startMs: 0,
+      endMs: 3200
+    },
+    {
+      id: "cue-distill",
+      text: "Heat gently. Watch for the thermometer to reach 100 degrees Celsius. Water vapor will travel through the condenser.",
+      startMs: 0,
+      endMs: 4000
+    }
+  ],
+  assets: []
+};
+
+export const fractionalDistillationDefinition: ExperimentDefinition = {
+  schemaVersion: EXPERIMENT_SCHEMA_VERSION,
+  runtimeVersion: EXPERIMENT_RUNTIME_VERSION,
+  id: "fractional-distillation",
+  title: "Fractional distillation of alcohol and water",
+  subject: "chemistry",
+  version: 1,
+  apparatus: [
+    { id: "beaker", type: "beaker", label: "Distillation flask" },
+    { id: "funnel", type: "funnel", label: "Fractionating column" },
+    { id: "receiving-flask", type: "receiving-flask", label: "Receiving flask" },
+    { id: "heat-source", type: "heat-source", label: "Heat source" },
+    { id: "mixture", type: "mixture", label: "Alcohol-water mixture" }
+  ],
+  steps: [
+    {
+      id: "fill-flask",
+      instruction: "Pour the alcohol-water mixture into the distillation flask.",
+      ruleId: "pour-mixture",
+      narrationCueId: "cue-fill"
+    },
+    {
+      id: "setup-column",
+      instruction: "Set up the fractionating column above the flask.",
+      ruleId: "setup-column",
+      narrationCueId: "cue-column"
+    },
+    {
+      id: "collect-fraction",
+      instruction: "Heat and collect the first fraction at ~78°C in the receiving flask.",
+      ruleId: "collect-fraction",
+      narrationCueId: "cue-collect"
+    }
+  ],
+  rules: [
+    {
+      id: "pour-mixture",
+      action: { "type": "pour", "from": "mixture", "to": "beaker" },
+      feedback: "The alcohol-water mixture is in the distillation flask."
+    },
+    {
+      id: "setup-column",
+      action: { "type": "place", "apparatus": "funnel", "slot": "beaker" },
+      feedback: "The fractionating column provides multiple condensation-vaporization cycles."
+    },
+    {
+      id: "collect-fraction",
+      action: { "type": "place", "apparatus": "mixture", "slot": "receiving-flask" },
+      outcomeId: "fractions-separated",
+      feedback: "Ethanol (boiling at 78°C) collects first as the first fraction."
+    }
+  ],
+  outcomes: [
+    {
+      id: "fractions-separated",
+      title: "Fractions separated",
+      description: "Ethanol-rich vapor collected first, followed by water. The column allows separation of liquids with close boiling points."
+    }
+  ],
+  scoring: {
+    "maxScore": 3,
+    "hooks": [
+      { "id": "step-complete", "event": "correct_step", "points": 1 }
+    ]
+  },
+  safeFailure: {
+    message: "Check the temperature and collection points.",
+    guidance: "Ethanol boils at ~78°C, water at 100°C. Switch flasks at the right temperature."
+  },
+  narration: [
+    {
+      id: "cue-fill",
+      text: "Pour the alcohol-water mixture into the distillation flask. The mixture fills the flask about three-quarters full.",
+      startMs: 0,
+      endMs: 3600
+    },
+    {
+      id: "cue-column",
+      text: "Set up the fractionating column above the flask. The column is packed with glass beads to increase surface area.",
+      startMs: 0,
+      endMs: 3800
+    },
+    {
+      id: "cue-collect",
+      text: "Heat gently. The temperature will rise to 78°C as ethanol vaporizes first. Collect this first fraction.",
+      startMs: 0,
+      endMs: 4200
+    }
+  ],
+  captions: [
+    {
+      id: "cue-fill",
+      text: "Pour the alcohol-water mixture into the distillation flask. The mixture fills the flask about three-quarters full.",
+      startMs: 0,
+      endMs: 3600
+    },
+    {
+      id: "cue-column",
+      text: "Set up the fractionating column above the flask. The column is packed with glass beads to increase surface area.",
+      startMs: 0,
+      endMs: 3800
+    },
+    {
+      id: "cue-collect",
+      text: "Heat gently. The temperature will rise to 78°C as ethanol vaporizes first. Collect this first fraction.",
+      startMs: 0,
+      endMs: 4200
+    }
+  ],
+  assets: []
+};
+
+export const decantationDefinition: ExperimentDefinition = {
+  schemaVersion: EXPERIMENT_SCHEMA_VERSION,
+  runtimeVersion: EXPERIMENT_RUNTIME_VERSION,
+  id: "decantation",
+  title: "Decant a settled mixture",
+  subject: "chemistry",
+  version: 1,
+  apparatus: [
+    { id: "beaker", type: "beaker", label: "Beaker with settled mixture" },
+    { id: "receiving-flask", type: "receiving-flask", label: "Receiving beaker" }
+  ],
+  steps: [
+    {
+      id: "wait-settle",
+      instruction: "Allow the sand-water mixture to settle completely (if not already settled).",
+      ruleId: "wait-settle",
+      narrationCueId: "cue-wait"
+    },
+    {
+      id: "tilt-and-pour",
+      instruction: "Carefully tilt the beaker and pour the liquid into the receiving beaker.",
+      ruleId: "pour-liquid",
+      narrationCueId: "cue-pour"
+    },
+    {
+      id: "verify-separation",
+      instruction: "Check that the liquid has been separated from the sand.",
+      ruleId: "verify-separation",
+      narrationCueId: "cue-check"
+    }
+  ],
+  rules: [
+    {
+      id: "wait-settle",
+      action: { "type": "place", "apparatus": "beaker", "slot": "workbench-center" },
+      feedback: "The mixture has settled with sand at the bottom."
+    },
+    {
+      id: "pour-liquid",
+      action: { "type": "pour", "from": "beaker", "to": "receiving-flask" },
+      feedback: "The clear liquid (supernatant) is poured off, leaving sand behind."
+    },
+    {
+      id: "verify-separation",
+      action: { "type": "place", "apparatus": "receiving-flask", "slot": "workbench-right" },
+      outcomeId: "liquid-separated",
+      feedback: "Liquid separated. A secondary pour may be needed for clarity."
+    }
+  ],
+  outcomes: [
+    {
+      id: "liquid-separated",
+      title: "Liquid separated",
+      description: "The clear liquid has been separated from the settled sand by careful pouring."
+    }
+  ],
+  scoring: {
+    "maxScore": 3,
+    "hooks": [{ "id": "step-complete", "event": "correct_step", "points": 1 }]
+  },
+  safeFailure: {
+    message: "Decantation requires patience and care.",
+    guidance: "Tilt slowly and pour carefully along the side to avoid disturbing the settled sand."
+  },
+  narration: [
+    {
+      id: "cue-wait",
+      text: "Allow the sand-water mixture to settle until the sand has completely settled at the bottom.",
+      startMs: 0,
+      endMs: 3400
+    },
+    {
+      id: "cue-pour",
+      text: "Tilt the beaker carefully. Pour the clear liquid (supernatant) into the receiving beaker, avoiding the sand at the bottom.",
+      startMs: 0,
+      endMs: 3600
+    },
+    {
+      id: "cue-check",
+      text: "Check your separation. The liquid should be clear, and the sand should remain in the original beaker.",
+      startMs: 0,
+      endMs: 3200
+    }
+  ],
+  captions: [
+    {
+      id: "cue-wait",
+      text: "Allow the sand-water mixture to settle until the sand has completely settled at the bottom.",
+      startMs: 0,
+      endMs: 3400
+    },
+    {
+      id: "cue-pour",
+      text: "Tilt the beaker carefully. Pour the clear liquid (supernatant) into the receiving beaker, avoiding the sand at the bottom.",
+      startMs: 0,
+      endMs: 3600
+    },
+    {
+      id: "cue-check",
+      text: "Check your separation. The liquid should be clear, and the sand should remain in the original beaker.",
+      startMs: 0,
+      endMs: 3200
+    }
+  ],
+  assets: []
+};
+
+export const chromatographyDefinition: ExperimentDefinition = {
+  schemaVersion: EXPERIMENT_SCHEMA_VERSION,
+  runtimeVersion: EXPERIMENT_RUNTIME_VERSION,
+  id: "chromatography",
+  title: "Separate ink components by paper chromatography",
+  subject: "chemistry",
+  version: 1,
+  apparatus: [
+    { id: "beaker", type: "beaker", label: "Chromatography paper" },
+    { id: "mixture", type: "mixture", label: "Ink sample" },
+    { id: "heat-source", type: "heat-source", label: "Solvent (isopropyl alcohol)" }
+  ],
+  steps: [
+    {
+      id: "prepare-paper",
+      instruction: "Mark a pencil line 2 cm from the bottom of the chromatography paper.",
+      ruleId: "prepare-paper",
+      narrationCueId: "cue-mark"
+    },
+    {
+      id: "apply-ink",
+      instruction: "Apply a small dot of ink on the pencil line.",
+      ruleId: "apply-ink",
+      narrationCueId: "cue-dot"
+    },
+    {
+      id: "develop",
+      instruction: "Place the inked paper into the solvent jar so the dot is just above the solvent level.",
+      ruleId: "develop",
+      narrationCueId: "cue-develop"
+    },
+    {
+      id: "analyze",
+      instruction: "Observe the separated colors as the solvent travels up the paper.",
+      ruleId: "analyze",
+      narrationCueId: "cue-observe"
+    }
+  ],
+  rules: [
+    {
+      id: "prepare-paper",
+      action: { "type": "place", "apparatus": "beaker", "slot": "bench-center" },
+      feedback: "The paper is ready for marking with a pencil line 2 cm from the bottom."
+    },
+    {
+      id: "apply-ink",
+      action: { "type": "pour", "from": "mixture", "to": "beaker" },
+      feedback: "A small ink dot is applied at the marked spot."
+    },
+    {
+      id: "develop",
+      action: { "type": "place", "apparatus": "mixture", "slot": "heat-source" },
+      outcomeId: "colors-separated",
+      feedback: "The solvent travels up the paper by capillary action, separating the ink components."
+    },
+    {
+      id: "analyze",
+      action: { "type": "place", "apparatus": "heat-source", "slot": "tray" },
+      feedback: "Watch as the solvent travels and separates the ink colors into distinct bands."
+    }
+  ],
+  outcomes: [
+    {
+      id: "colors-separated",
+      title: "Colors separated",
+      description: "The solvent has traveled up the paper, carrying different ink pigments at different rates, creating distinct colored bands."
+    }
+  ],
+  scoring: {
+    "maxScore": 3,
+    "hooks": [
+      { "id": "step-complete", "event": "correct_step", "points": 1 }
+    ]
+  },
+  safeFailure: {
+    message: "Paper chromatography separates colors by solubility.",
+    guidance: "Place the paper so the ink dot is just above the solvent level. Watch carefully as colors separate."
+  },
+  narration: [
+    {
+      id: "cue-mark",
+      text: "Take a pencil and mark a line 2 cm from the bottom of the chromatography paper. Use pencil, not pen, so the marking doesn't dissolve.",
+      startMs: 0,
+      endMs: 3800
+    },
+    {
+      id: "cue-dot",
+      text: "Using a small brush or cotton swab, apply a small dot of ink on the marked line. The dot should be small and distinct.",
+      startMs: 0,
+      endMs: 3600
+    },
+    {
+      id: "cue-develop",
+      text: "Place the inked paper into the solvent jar so the ink dot is just above the solvent level. Don't let the paper touch the solvent.",
+      startMs: 0,
+      endMs: 4000
+    },
+    {
+      id: "cue-observe",
+      text: "Watch as the solvent travels up the paper. Different pigments travel at different rates, separating into distinct colored bands.",
+      startMs: 0,
+      endMs: 4200
+    }
+  ],
+  captions: [
+    {
+      id: "cue-mark",
+      text: "Mark a pencil line 2 cm from the bottom of the chromatography paper.",
+      startMs: 0,
+      endMs: 3800
+    },
+    {
+      id: "cue-dot",
+      text: "Apply a small ink dot on the marked line using a brush.",
+      startMs: 0,
+      endMs: 3600
+    },
+    {
+      id: "cue-develop",
+      text: "Place the paper in the solvent jar. The solvent rises by capillary action.",
+      startMs: 0,
+      endMs: 4000
+    },
+    {
+      id: "cue-observe",
+      text: "Observe the separated colored bands as the solvent travels up the paper.",
+      startMs: 0,
+      endMs: 4200
+    }
+  ],
+  assets: []
+};

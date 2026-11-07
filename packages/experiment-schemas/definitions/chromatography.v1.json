@@ -1,0 +1,132 @@
+{
+  "schemaVersion": "1.1",
+  "runtimeVersion": "1.0.0",
+  "id": "chromatography",
+  "title": "Separate ink components by paper chromatography",
+  "subject": "chemistry",
+  "version": 1,
+  "apparatus": [
+    { "id": "beaker", "type": "beaker", "label": "Chromatography paper" },
+    { "id": "mixture", "type": "mixture", "label": "Ink sample" },
+    { "id": "heat-source", "type": "heat-source", "label": "Solvent (isopropyl alcohol)" }
+  ],
+  "steps": [
+    {
+      "id": "prepare-paper",
+      "instruction": "Mark a pencil line 2 cm from the bottom of the chromatography paper.",
+      "ruleId": "prepare-paper",
+      "narrationCueId": "cue-mark"
+    },
+    {
+      "id": "apply-ink",
+      "instruction": "Apply a small dot of ink on the pencil line.",
+      "ruleId": "apply-ink",
+      "narrationCueId": "cue-dot"
+    },
+    {
+      "id": "develop",
+      "instruction": "Place the inked paper into the solvent jar so the dot is just above the solvent level.",
+      "ruleId": "develop",
+      "narrationCueId": "cue-develop"
+    },
+    {
+      "id": "analyze",
+      "instruction": "Observe the separated colors as the solvent travels up the paper.",
+      "ruleId": "analyze",
+      "narrationCueId": "cue-observe"
+    }
+  ],
+  "rules": [
+    {
+      "id": "prepare-paper",
+      "action": { "type": "place", "apparatus": "beaker", "slot": "bench-center" },
+      "feedback": "The paper is ready for marking with a pencil line 2 cm from the bottom."
+    },
+    {
+      "id": "apply-ink",
+      "action": { "type": "pour", "from": "mixture", "to": "beaker" },
+      "feedback": "A small ink dot is applied at the marked spot."
+    },
+    {
+      "id": "develop",
+      "action": { "type": "place", "apparatus": "mixture", "slot": "heat-source" },
+      "outcomeId": "colors-separated",
+      "feedback": "The solvent travels up the paper by capillary action, separating the ink components."
+    },
+    {
+      "id": "analyze",
+      "action": { "type": "place", "apparatus": "heat-source", "slot": "tray" },
+      "feedback": "Watch as the solvent travels and separates the ink colors into distinct bands."
+    }
+  ],
+  "outcomes": [
+    {
+      "id": "colors-separated",
+      "title": "Colors separated",
+      "description": "The solvent has traveled up the paper, carrying different ink pigments at different rates, creating distinct colored bands."
+    }
+  ],
+  "scoring": {
+    "maxScore": 3,
+    "hooks": [
+      { "id": "step-complete", "event": "correct_step", "points": 1 }
+    ]
+  },
+  "safeFailure": {
+    "message": "Paper chromatography separates colors by solubility.",
+    "guidance": "Place the paper so the ink dot is just above the solvent level. Watch carefully as colors separate."
+  },
+  "narration": [
+    {
+      "id": "cue-mark",
+      "text": "Take a pencil and mark a line 2 cm from the bottom of the chromatography paper. Use pencil, not pen, so the marking doesn't dissolve.",
+      "startMs": 0,
+      "endMs": 3800
+    },
+    {
+      "id": "cue-dot",
+      "text": "Using a small brush or cotton swab, apply a small dot of ink on the marked line. The dot should be small and distinct.",
+      "startMs": 0,
+      "endMs": 3600
+    },
+    {
+      "id": "cue-develop",
+      "text": "Place the inked paper into the solvent jar so the ink dot is just above the solvent level. Don't let the paper touch the solvent.",
+      "startMs": 0,
+      "endMs": 4000
+    },
+    {
+      "id": "cue-observe",
+      "text": "Watch as the solvent travels up the paper. Different pigments travel at different rates, separating into distinct colored bands.",
+      "startMs": 0,
+      "endMs": 4200
+    }
+  ],
+  "captions": [
+    {
+      "id": "cue-mark",
+      "text": "Mark a pencil line 2 cm from the bottom of the chromatography paper.",
+      "startMs": 0,
+      "endMs": 3800
+    },
+    {
+      "id": "cue-dot",
+      "text": "Apply a small ink dot on the marked line using a brush.",
+      "startMs": 0,
+      "endMs": 3600
+    },
+    {
+      "id": "cue-develop",
+      "text": "Place the paper in the solvent jar. The solvent rises by capillary action.",
+      "startMs": 0,
+      "endMs": 4000
+    },
+    {
+      "id": "cue-observe",
+      "text": "Observe the separated colored bands as the solvent travels up the paper.",
+      "startMs": 0,
+      "endMs": 4200
+    }
+  ],
+  "assets": []
+}

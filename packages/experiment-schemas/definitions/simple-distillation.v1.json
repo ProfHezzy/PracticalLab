@@ -1,0 +1,132 @@
+{
+  "schemaVersion": "1.1",
+  "runtimeVersion": "1.0.0",
+  "id": "simple-distillation",
+  "title": "Distill a liquid from a solution",
+  "subject": "chemistry",
+  "version": 1,
+  "apparatus": [
+    { "id": "beaker", "type": "beaker", "label": "Distillation flask" },
+    { "id": "funnel", "type": "funnel", "label": "Liebig condenser" },
+    { "id": "receiving-flask", "type": "receiving-flask", "label": "Receiving flask" },
+    { "id": "heat-source", "type": "heat-source", "label": "Heat source" },
+    { "id": "mixture", "type": "mixture", "label": "Ink solution" }
+  ],
+  "steps": [
+    {
+      "id": "setup-flask",
+      "instruction": "Pour the ink solution into the distillation flask.",
+      "ruleId": "pour-solution",
+      "narrationCueId": "cue-pour"
+    },
+    {
+      "id": "connect-condenser",
+      "instruction": "Connect the condenser with cold water flowing in at the lower end.",
+      "ruleId": "connect-condenser",
+      "narrationCueId": "cue-connect"
+    },
+    {
+      "id": "place-thermometer",
+      "instruction": "Place the receiving flask under the condenser outlet.",
+      "ruleId": "place-receiver",
+      "narrationCueId": "cue-place"
+    },
+    {
+      "id": "heat-and-collect",
+      "instruction": "Heat gently and collect the clear distillate.",
+      "ruleId": "distill",
+      "narrationCueId": "cue-distill"
+    }
+  ],
+  "rules": [
+    {
+      "id": "pour-solution",
+      "action": { "type": "pour", "from": "mixture", "to": "beaker" },
+      "feedback": "The ink solution fills the distillation flask."
+    },
+    {
+      "id": "connect-condenser",
+      "action": { "type": "place", "apparatus": "funnel", "slot": "beaker" },
+      "feedback": "The condenser is connected with water flow entering at the bottom."
+    },
+    {
+      "id": "place-receiver",
+      "action": { "type": "place", "apparatus": "receiving-flask", "slot": "bench-right" },
+      "feedback": "The receiving flask is positioned to collect the distillate."
+    },
+    {
+      "id": "distill",
+      "action": { "type": "place", "apparatus": "mixture", "slot": "funnel" },
+      "outcomeId": "water-distilled",
+      "feedback": "Water vapor travels through the condenser and condenses in the receiving flask."
+    }
+  ],
+  "outcomes": [
+    {
+      "id": "water-distilled",
+      "title": "Water distilled",
+      "description": "Clear water (distillate) collects in the receiving flask while ink residue remains in the distillation flask."
+    }
+  ],
+  "scoring": {
+    "maxScore": 4,
+    "hooks": [{ "id": "step-complete", "event": "correct_step", "points": 1 }]
+  },
+  "safeFailure": {
+    "message": "Check your setup and try again.",
+    "guidance": "Ensure condenser water is flowing before heating and the receiving flask is positioned correctly."
+  },
+  "narration": [
+    {
+      "id": "cue-pour",
+      "text": "Pour the ink solution into the distillation flask. Fill it about three quarters full.",
+      "startMs": 0,
+      "endMs": 3400
+    },
+    {
+      "id": "cue-connect",
+      "text": "Connect the Liebig condenser. Cold water should enter at the bottom and exit at the top.",
+      "startMs": 0,
+      "endMs": 3600
+    },
+    {
+      "id": "cue-place",
+      "text": "Place the receiving flask under the condenser outlet to catch the distillate.",
+      "startMs": 0,
+      "endMs": 3200
+    },
+    {
+      "id": "cue-distill",
+      "text": "Heat gently. Watch for the thermometer to reach 100 degrees Celsius. Water vapor will travel through the condenser.",
+      "startMs": 0,
+      "endMs": 4000
+    }
+  ],
+  "captions": [
+    {
+      "id": "cue-pour",
+      "text": "Pour the ink solution into the distillation flask. Fill it about three quarters full.",
+      "startMs": 0,
+      "endMs": 3400
+    },
+    {
+      "id": "cue-connect",
+      "text": "Connect the Liebig condenser. Cold water should enter at the bottom and exit at the top.",
+      "startMs": 0,
+      "endMs": 3600
+    },
+    {
+      "id": "cue-place",
+      "text": "Place the receiving flask under the condenser outlet to catch the distillate.",
+      "startMs": 0,
+      "endMs": 3200
+    },
+    {
+      "id": "cue-distill",
+      "text": "Heat gently. Watch for the thermometer to reach 100 degrees Celsius. Water vapor will travel through the condenser.",
+      "startMs": 0,
+      "endMs": 4000
+    }
+  ],
+  "assets": []
+}

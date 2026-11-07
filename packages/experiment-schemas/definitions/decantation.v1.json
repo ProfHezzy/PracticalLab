@@ -1,0 +1,106 @@
+{
+  "schemaVersion": "1.1",
+  "runtimeVersion": "1.0.0",
+  "id": "decantation",
+  "title": "Decant a settled mixture",
+  "subject": "chemistry",
+  "version": 1,
+  "apparatus": [
+    { "id": "beaker", "type": "beaker", "label": "Beaker with settled mixture" },
+    { "id": "receiving-flask", "type": "receiving-flask", "label": "Receiving beaker" }
+  ],
+  "steps": [
+    {
+      "id": "wait-settle",
+      "instruction": "Allow the sand-water mixture to settle completely (if not already settled).",
+      "ruleId": "wait-settle",
+      "narrationCueId": "cue-wait"
+    },
+    {
+      "id": "tilt-and-pour",
+      "instruction": "Carefully tilt the beaker and pour the liquid into the receiving beaker.",
+      "ruleId": "pour-liquid",
+      "narrationCueId": "cue-pour"
+    },
+    {
+      "id": "verify-separation",
+      "instruction": "Check that the liquid has been separated from the sand.",
+      "ruleId": "verify-separation",
+      "narrationCueId": "cue-check"
+    }
+  ],
+  "rules": [
+    {
+      "id": "wait-settle",
+      "action": { "type": "place", "apparatus": "beaker", "slot": "workbench-center" },
+      "feedback": "The mixture has settled with sand at the bottom."
+    },
+    {
+      "id": "pour-liquid",
+      "action": { "type": "pour", "from": "beaker", "to": "receiving-flask" },
+      "feedback": "The clear liquid (supernatant) is poured off, leaving sand behind."
+    },
+    {
+      "id": "verify-separation",
+      "action": { "type": "place", "apparatus": "receiving-flask", "slot": "workbench-right" },
+      "outcomeId": "liquid-separated",
+      "feedback": "Liquid separated. A secondary pour may be needed for clarity."
+    }
+  ],
+  "outcomes": [
+    {
+      "id": "liquid-separated",
+      "title": "Liquid separated",
+      "description": "The clear liquid has been separated from the settled sand by careful pouring."
+    }
+  ],
+  "scoring": {
+    "maxScore": 3,
+    "hooks": [{ "id": "step-complete", "event": "correct_step", "points": 1 }]
+  },
+  "safeFailure": {
+    "message": "Decantation requires patience and care.",
+    "guidance": "Tilt slowly and pour carefully along the side to avoid disturbing the settled sand."
+  },
+  "narration": [
+    {
+      "id": "cue-wait",
+      "text": "Allow the sand-water mixture to settle until the sand has completely settled at the bottom.",
+      "startMs": 0,
+      "endMs": 3400
+    },
+    {
+      "id": "cue-pour",
+      "text": "Tilt the beaker carefully. Pour the clear liquid (supernatant) into the receiving beaker, avoiding the sand at the bottom.",
+      "startMs": 0,
+      "endMs": 3600
+    },
+    {
+      "id": "cue-check",
+      "text": "Check your separation. The liquid should be clear, and the sand should remain in the original beaker.",
+      "startMs": 0,
+      "endMs": 3200
+    }
+  ],
+  "captions": [
+    {
+      "id": "cue-wait",
+      "text": "Allow the sand-water mixture to settle until the sand has completely settled at the bottom.",
+      "startMs": 0,
+      "endMs": 3400
+    },
+    {
+      "id": "cue-pour",
+      "text": "Tilt the beaker carefully. Pour the clear liquid (supernatant) into the receiving beaker, avoiding the sand at the bottom.",
+      "startMs": 0,
+      "endMs": 3600
+    },
+    {
+      "id": "cue-check",
+      "text": "Check your separation. The liquid should be clear, and the sand should remain in the original beaker.",
+      "startMs": 0,
+      "endMs": 3200
+    }
+  ],
+  "assets": []
+}

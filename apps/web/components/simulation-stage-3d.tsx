@@ -417,19 +417,28 @@ function FiltrateDrips({ active }: { active: boolean }) {
   );
 }
 
-export function SimulationStage3D({ definition: _definition, state, onAction }: Props) {
+export function SimulationStage3D({ definition, state, onAction }: Props) {
   const [cameraView, setCameraView] = useState<"front" | "top" | "close">(
     "front",
   );
   const controlsRef = useRef<OrbitControlsImpl | null>(null);
 
-  const flaskPlaced =
-    state.apparatusState["receiving-flask"]?.location === "workbench-left";
-  const funnelPlaced =
-    state.apparatusState.funnel?.location === "receiving-flask";
-  const paperFitted =
-    state.apparatusState["filter-paper"]?.location === "funnel";
-  const poured = state.history.some((action) => action.type === "pour");
+  // Generic apparatus state lookup based on definition
+  const getApparatusState = (id: string) =>
+    state.apparatusState[id]?.location;
+
+  // Find the current step's rule to understand what action to trigger
+  const currentStep = definition?.steps[state.stepIndex];
+  const currentRule = currentStep
+    ? definition.rules.find((r) => r.id === currentStep.ruleId)
+    : null;
+
+  // Build a map of apparatus locations for the 3D scene
+  const apparatusLocations = new Map<string, string>();
+  definition?.apparatus.forEach((item) => {
+    const location = getApparatusState(item.id);
+    if (location) apparatusLocations.set(item.id, location);
+  });
 
   // Camera presets
   const setPreset = (view: "front" | "top" | "close") => {
@@ -443,58 +452,57 @@ export function SimulationStage3D({ definition: _definition, state, onAction }: 
       controlsRef.current.target.set(-0.5, 0, 0);
       controlsRef.current.object.position.set(-0.5, 5.5, 0.5);
     } else if (view === "close") {
-      controlsRef.current.target.set(-1.2, 0.5, 0);
-      controlsRef.current.object.position.set(-1.2, 0.8, 2.6);
+      controlsRef.current.target.set(-0.5, 0.5, 0);
+      controlsRef.current.object.position.set(-0.5, 0.8, 2.6);
     }
   };
 
-  const handleFlaskClick = () => {
-    if (!flaskPlaced) {
+  // Generic click handler that finds the matching rule and triggers its action
+  const handleApparatusClick = (apparatusId: string) => {
+    // Find an uncompleted rule that involves this apparatus
+    const matchingRule = definition?.rules.find((rule) => {
+      const action = rule.action;
+      if (action.type === "place" && action.apparatus === apparatusId) {
+        return !state.completedRuleIds.includes(rule.id);
+      }
+      if (action.type === "fit" && action.apparatus === apparatusId) {
+        return !state.completedRuleIds.includes(rule.id);
+      }
+      if (action.type === "pour" && (action.from === apparatusId || action.to === apparatusId)) {
+        return !state.completedRuleIds.includes(rule.id);
+      }
+      return false;
+    });
+
+    if (matchingRule) {
       triggerHaptic(30);
       playSound("snap");
-      onAction({
-        type: "place",
-        apparatus: "receiving-flask",
-        slot: "workbench-left",
-      });
+      onAction(matchingRule.action);
     }
   };
 
-  const handleFunnelClick = () => {
-    if (flaskPlaced && !funnelPlaced) {
-      triggerHaptic(30);
-      playSound("snap");
-      onAction({
-        type: "place",
-        apparatus: "funnel",
-        slot: "receiving-flask",
-      });
-    }
-  };
+  // Check if we're in a state to pour (for mixture-like apparatus)
+  const poured = state.history.some((action) => action.type === "pour");
 
-  const handlePaperClick = () => {
-    if (funnelPlaced && !paperFitted) {
-      triggerHaptic(30);
-      playSound("snap");
-      onAction({
-        type: "fit",
-        apparatus: "filter-paper",
-        target: "funnel",
-      });
-    }
-  };
+  // Find flask and funnel apparatus for positioning
+  const flaskApparatus = definition?.apparatus.find((a) => a.type === "receiving-flask");
+  const funnelApparatus = definition?.apparatus.find((a) => a.type === "funnel");
+  const mixtureApparatus = definition?.apparatus.find((a) => a.type === "mixture");
+  const filterPaperApparatus = definition?.apparatus.find((a) => a.type === "filter-paper");
 
-  const handleBeakerClick = () => {
-    if (funnelPlaced && paperFitted && !poured) {
-      triggerHaptic(50);
-      playSound("pour");
-      onAction({
-        type: "pour",
-        from: "beaker",
-        to: "funnel",
-      });
-    }
-  };
+  // Determine locations based on definition
+  const flaskPlaced = flaskApparatus
+    ? getApparatusState(flaskApparatus.id) === "workbench-left"
+    : false;
+  const funnelPlaced = funnelApparatus
+    ? getApparatusState(funnelApparatus.id) === (flaskApparatus ? flaskApparatus.id : "receiving-flask")
+    : false;
+  const paperFitted = filterPaperApparatus
+    ? getApparatusState(filterPaperApparatus.id) === "funnel"
+    : false;
+  const mixturePlaced = mixtureApparatus
+    ? getApparatusState(mixtureApparatus.id)
+    : null;
 
   return (
     <div
@@ -611,30 +619,81 @@ export function SimulationStage3D({ definition: _definition, state, onAction }: 
         <LabBench />
         <RetortStand />
 
-        <ConicalFlask
-          placed={flaskPlaced}
-          hasFiltrate={poured}
-          onClick={handleFlaskClick}
-        />
+        {flaskApparatus && (
+          <ConicalFlask
+            placed={flaskPlaced}
+            hasFiltrate={poured}
+            onClick={() =>
+              handleApparatusClick(flaskApparatus.id)
+            }
+          />
+        )}
 
-        <Funnel
-          placed={funnelPlaced}
-          flaskPlaced={flaskPlaced}
-          paperFitted={paperFitted}
-          onClick={handleFunnelClick}
-        />
+        {funnelApparatus && (
+          <Funnel
+            placed={funnelPlaced}
+            flaskPlaced={flaskPlaced}
+            paperFitted={paperFitted}
+            onClick={() =>
+              handleApparatusClick(funnelApparatus.id)
+            }
+          />
+        )}
 
-        <FilterPaperItem
-          paperFitted={paperFitted}
-          funnelPlaced={funnelPlaced}
-          onClick={handlePaperClick}
-        />
+        {filterPaperApparatus && (
+          <FilterPaperItem
+            paperFitted={paperFitted}
+            funnelPlaced={funnelPlaced}
+            onClick={() =>
+              handleApparatusClick(filterPaperApparatus.id)
+            }
+          />
+        )}
 
-        <MixtureBeaker
-          poured={poured}
-          canPour={funnelPlaced && paperFitted}
-          onClick={handleBeakerClick}
-        />
+        {mixtureApparatus && (
+          <MixtureBeaker
+            poured={poured}
+            canPour={!poured && !state.completedRuleIds.includes("pour")}
+            onClick={() =>
+              handleApparatusClick(mixtureApparatus.id)
+            }
+          />
+        )}
+
+        {/* Any remaining apparatus as generic beakers */}
+        {definition?.apparatus
+          .filter(
+            (a) =>
+              !["receiving-flask", "funnel", "filter-paper", "mixture"].includes(
+                a.type,
+              ) &&
+              a.id !== flaskApparatus?.id &&
+              a.id !== funnelApparatus?.id &&
+              a.id !== filterPaperApparatus?.id &&
+              a.id !== mixtureApparatus?.id
+          )
+          .map((item) => {
+            const placed = getApparatusState(item.id);
+            return (
+              <group key={item.id} position={[3.8, -0.65, 0.2]}>
+                <mesh
+                  castShadow
+                  receiveShadow
+                  position={[0, 0, 0]}
+                  onClick={() => handleApparatusClick(item.id)}
+                >
+                  <cylinderGeometry args={[0.44, 0.44, 0.95, 24, 1, true]} />
+                  <meshPhysicalMaterial
+                    color={TOKENS.glassColor}
+                    transparent
+                    opacity={0.45}
+                    roughness={0.15}
+                    transmission={0.8}
+                  />
+                </mesh>
+              </group>
+            );
+          })}
 
         <FiltrateDrips active={poured} />
 

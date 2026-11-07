@@ -125,3 +125,33 @@ test("free exploration accepts correct steps in any order and scores only on che
   assert.deepEqual(replay.events, state.events);
   assert.equal(replay.outcomeId, state.outcomeId);
 });
+
+const chemDefinitions = [
+  "evaporation",
+  "simple-distillation",
+  "fractional-distillation",
+  "decantation",
+  "chromatography",
+];
+
+for (const id of chemDefinitions) {
+  const defPath = path.join(
+    root,
+    `packages/experiment-schemas/definitions/${id}.v1.json`,
+  );
+  const definition = JSON.parse(await readFile(defPath, "utf8"));
+  const errors = schema.definitionErrors(definition);
+
+  test(`${id} definition validates`, () => {
+    assert.deepEqual(errors, [], `Expected no errors for ${id}`);
+    assert.equal(definition.subject, "chemistry");
+    assert.equal(definition.version, 1);
+  });
+
+  test(`${id} completes successfully`, () => {
+    const actions = definition.rules.map((r) => r.action);
+    const result = engine.replayActions(definition, actions);
+    assert.equal(result.status, "completed");
+    assert.equal(result.score, definition.scoring.maxScore);
+  });
+}
