@@ -110,6 +110,12 @@ const shapes: Record<string, ReactNode> = {
   play: (
     <path d="M5 4v16l12-8Z" />
   ),
+  library: (
+    <>
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+      <path d="M8 8h8M8 12h8M8 16h5" />
+    </>
+  ),
 };
 
 export function Icon({

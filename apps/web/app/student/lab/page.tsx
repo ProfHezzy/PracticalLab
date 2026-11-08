@@ -13,6 +13,10 @@ import {
   fractionalDistillationDefinition,
   decantationDefinition,
   chromatographyDefinition,
+  componentIdentificationDefinition,
+  seriesCircuitDefinition,
+  parallelCircuitDefinition,
+  faultDiagnosisDefinition,
   validateDefinition,
 } from "@practicallab/experiment-schemas";
 import {
@@ -46,7 +50,11 @@ type ExperimentId =
   | "simple-distillation"
   | "fractional-distillation"
   | "decantation"
-  | "chromatography";
+  | "chromatography"
+  | "component-identification"
+  | "series-circuit"
+  | "parallel-circuit"
+  | "fault-diagnosis";
 
 const EXPERIMENT_DEFINITIONS = {
   filtration: filtrationDefinition,
@@ -55,7 +63,24 @@ const EXPERIMENT_DEFINITIONS = {
   "fractional-distillation": fractionalDistillationDefinition,
   decantation: decantationDefinition,
   chromatography: chromatographyDefinition,
+  "component-identification": componentIdentificationDefinition,
+  "series-circuit": seriesCircuitDefinition,
+  "parallel-circuit": parallelCircuitDefinition,
+  "fault-diagnosis": faultDiagnosisDefinition,
 } as const;
+
+const EXPERIMENT_SUBJECTS: Record<ExperimentId, string> = {
+  filtration: "chemistry",
+  evaporation: "chemistry",
+  "simple-distillation": "chemistry",
+  "fractional-distillation": "chemistry",
+  decantation: "chemistry",
+  chromatography: "chemistry",
+  "component-identification": "electronics",
+  "series-circuit": "electronics",
+  "parallel-circuit": "electronics",
+  "fault-diagnosis": "electronics",
+};
 
 const EXPERIMENT_HINTS: Record<ExperimentId, string> = {
   filtration: "What must line the funnel before the mixture goes in?",
@@ -64,6 +89,10 @@ const EXPERIMENT_HINTS: Record<ExperimentId, string> = {
   "fractional-distillation": "What does the fractionating column do that a simple condenser doesn't?",
   decantation: "How do you pour without disturbing the settled solids?",
   chromatography: "Why must the ink dot be above the solvent level?",
+  "component-identification": "Identify components by shape, markings, and terminals.",
+  "series-circuit": "All components must be connected in a single loop.",
+  "parallel-circuit": "Each branch connects directly across the power rails.",
+  "fault-diagnosis": "Use the multimeter systematically: check voltage, then current.",
 };
 
 function getExperimentId(searchParams: URLSearchParams): ExperimentId {
@@ -75,6 +104,9 @@ export default function StudentLabPage() {
   const searchParams = useSearchParams();
   const experimentId = getExperimentId(searchParams);
   const definition = EXPERIMENT_DEFINITIONS[experimentId];
+  const subject = EXPERIMENT_SUBJECTS[experimentId] || "chemistry";
+  const subjectLabel = subject === "electronics" ? "ELECTRONICS" : "CHEMISTRY";
+  const categoryLabel = subject === "electronics" ? "BASIC ELECTRONICS" : "SEPARATION TECHNIQUES";
 
   const [state, setState] = useState(() => {
     const initial = createInitialState(false);
@@ -251,7 +283,7 @@ export default function StudentLabPage() {
 
         <section className="lab-heading">
           <div>
-            <p className="eyebrow">CHEMISTRY · SEPARATION TECHNIQUES</p>
+            <p className="eyebrow">{subjectLabel} · {categoryLabel}</p>
             <h1>{definition.title}</h1>
             <p>{definition.steps[0]?.instruction || "Follow the steps to complete this practical."}</p>
             <span className="lab-review-badge">

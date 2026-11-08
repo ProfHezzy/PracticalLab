@@ -77,6 +77,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     ? [
         { href: "/teacher", label: "Overview", icon: "home" },
         {
+          href: "/teacher/library",
+          label: "Library",
+          icon: "library",
+        },
+        {
           href: "/teacher/verification",
           label: "Verification",
           icon: "shield",
@@ -118,7 +123,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <span className="rail-icon">
                   <Icon
                     name={
-                      item.icon as "home" | "book" | "flask" | "user" | "shield"
+                      item.icon as "home" | "book" | "flask" | "user" | "shield" | "library"
                     }
                   />
                 </span>
@@ -206,7 +211,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <span>
                   <Icon
                     name={
-                      item.icon as "home" | "book" | "flask" | "user" | "shield"
+                      item.icon as "home" | "book" | "flask" | "user" | "shield" | "library"
                     }
                   />
                 </span>
@@ -215,6 +220,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     ? "Explore"
                     : item.label === "Overview"
                       ? "Home"
+                      : item.label === "Library"
+                        ? "Library"
                       : item.label === "My lab"
                         ? "Lab"
                         : "Profile"}
