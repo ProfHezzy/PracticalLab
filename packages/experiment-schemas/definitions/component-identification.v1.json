@@ -1,0 +1,133 @@
+{
+  "schemaVersion": "1.1",
+  "runtimeVersion": "1.0.0",
+  "id": "component-identification",
+  "title": "Identify Basic Electronic Components",
+  "subject": "electronics",
+  "version": 1,
+  "apparatus": [
+    { "id": "resistor", "type": "resistor", "label": "Resistor" },
+    { "id": "led", "type": "led", "label": "LED" },
+    { "id": "battery", "type": "battery", "label": "Battery (AA)" },
+    { "id": "switch", "type": "switch", "label": "Switch" },
+    { "id": "breadboard", "type": "breadboard", "label": "Breadboard" },
+    { "id": "wire", "type": "wire", "label": "Jumper Wire" },
+    { "id": "multimeter", "type": "multimeter", "label": "Multimeter" }
+  ],
+  "steps": [
+    {
+      "id": "identify-resistor",
+      "instruction": "Identify the resistor by its color bands and cylindrical shape.",
+      "ruleId": "identify-resistor",
+      "narrationCueId": "cue-resistor"
+    },
+    {
+      "id": "identify-led",
+      "instruction": "Identify the LED by its clear/colored dome and two legs (anode and cathode).",
+      "ruleId": "identify-led",
+      "narrationCueId": "cue-led"
+    },
+    {
+      "id": "identify-battery",
+      "instruction": "Identify the battery by its cylindrical shape with positive and negative terminals.",
+      "ruleId": "identify-battery",
+      "narrationCueId": "cue-battery"
+    },
+    {
+      "id": "identify-switch",
+      "instruction": "Identify the switch by its toggle/lever mechanism.",
+      "ruleId": "identify-switch",
+      "narrationCueId": "cue-switch"
+    },
+    {
+      "id": "identify-breadboard",
+      "instruction": "Identify the breadboard by its grid of holes for connecting components.",
+      "ruleId": "identify-breadboard",
+      "narrationCueId": "cue-breadboard"
+    },
+    {
+      "id": "identify-wire",
+      "instruction": "Identify the jumper wire by its flexible insulation and metal connectors.",
+      "ruleId": "identify-wire",
+      "narrationCueId": "cue-wire"
+    },
+    {
+      "id": "identify-multimeter",
+      "instruction": "Identify the multimeter by its display, dial, and probe ports.",
+      "ruleId": "identify-multimeter",
+      "narrationCueId": "cue-multimeter"
+    }
+  ],
+  "rules": [
+    {
+      "id": "identify-resistor",
+      "action": { "type": "identify", "apparatus": "resistor" },
+      "feedback": "Resistor identified. It limits current flow in a circuit."
+    },
+    {
+      "id": "identify-led",
+      "action": { "type": "identify", "apparatus": "led" },
+      "feedback": "LED identified. It emits light when current flows in the forward direction."
+    },
+    {
+      "id": "identify-battery",
+      "action": { "type": "identify", "apparatus": "battery" },
+      "feedback": "Battery identified. It provides the voltage source for the circuit."
+    },
+    {
+      "id": "identify-switch",
+      "action": { "type": "identify", "apparatus": "switch" },
+      "feedback": "Switch identified. It opens or closes the circuit path."
+    },
+    {
+      "id": "identify-breadboard",
+      "action": { "type": "identify", "apparatus": "breadboard" },
+      "feedback": "Breadboard identified. It allows temporary connections without soldering."
+    },
+    {
+      "id": "identify-wire",
+      "action": { "type": "identify", "apparatus": "wire" },
+      "feedback": "Jumper wire identified. It connects components on the breadboard."
+    },
+    {
+      "id": "identify-multimeter",
+      "action": { "type": "identify", "apparatus": "multimeter" },
+      "outcomeId": "all-identified",
+      "feedback": "Multimeter identified. It measures voltage, current, and resistance."
+    }
+  ],
+  "outcomes": [
+    {
+      "id": "all-identified",
+      "title": "All components identified",
+      "description": "You have successfully identified all basic electronic components needed for circuit building."
+    }
+  ],
+  "scoring": {
+    "maxScore": 7,
+    "hooks": [{ "id": "step-complete", "event": "correct_step", "points": 1 }]
+  },
+  "safeFailure": {
+    "message": "That component wasn't recognized.",
+    "guidance": "Look at the shape, markings, and terminals to identify each component."
+  },
+  "narration": [
+    { "id": "cue-resistor", "text": "This is a resistor. Notice the colored bands that indicate its resistance value.", "startMs": 0, "endMs": 3500 },
+    { "id": "cue-led", "text": "This is an LED — Light Emitting Diode. The longer leg is the anode (positive), the shorter is the cathode (negative).", "startMs": 0, "endMs": 4000 },
+    { "id": "cue-battery", "text": "This is a battery. The positive terminal is marked with a plus sign, the negative with a minus.", "startMs": 0, "endMs": 3500 },
+    { "id": "cue-switch", "text": "This is a switch. It controls whether current can flow through the circuit.", "startMs": 0, "endMs": 3000 },
+    { "id": "cue-breadboard", "text": "This is a breadboard. The holes are connected in rows and columns, allowing you to build circuits without soldering.", "startMs": 0, "endMs": 4500 },
+    { "id": "cue-wire", "text": "These are jumper wires. They connect components together on the breadboard.", "startMs": 0, "endMs": 3000 },
+    { "id": "cue-multimeter", "text": "This is a multimeter. It can measure voltage, current, and resistance to help you understand your circuit.", "startMs": 0, "endMs": 4000 }
+  ],
+  "captions": [
+    { "id": "cue-resistor", "text": "Resistor — colored bands show resistance value.", "startMs": 0, "endMs": 3500 },
+    { "id": "cue-led", "text": "LED — longer leg is anode (+), shorter is cathode (-).", "startMs": 0, "endMs": 4000 },
+    { "id": "cue-battery", "text": "Battery — positive (+) and negative (-) terminals.", "startMs": 0, "endMs": 3500 },
+    { "id": "cue-switch", "text": "Switch — opens or closes the circuit.", "startMs": 0, "endMs": 3000 },
+    { "id": "cue-breadboard", "text": "Breadboard — grid of connected holes for temporary circuits.", "startMs": 0, "endMs": 4500 },
+    { "id": "cue-wire", "text": "Jumper wire — connects components on the breadboard.", "startMs": 0, "endMs": 3000 },
+    { "id": "cue-multimeter", "text": "Multimeter — measures voltage, current, and resistance.", "startMs": 0, "endMs": 4000 }
+  ],
+  "assets": []
+}

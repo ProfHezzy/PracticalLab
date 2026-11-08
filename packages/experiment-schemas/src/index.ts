@@ -8,6 +8,15 @@ export const APPARATUS_TYPES = [
   "receiving-flask",
   "mixture",
   "heat-source",
+  "battery",
+  "wire",
+  "resistor",
+  "led",
+  "breadboard",
+  "multimeter",
+  "switch",
+  "bulb",
+  "motor",
 ] as const;
 
 export type ApparatusType = (typeof APPARATUS_TYPES)[number];
@@ -15,7 +24,12 @@ export type ApparatusType = (typeof APPARATUS_TYPES)[number];
 export type ExperimentAction =
   | { type: "place"; apparatus: ApparatusType; slot: string }
   | { type: "pour"; from: string; to: string }
-  | { type: "fit"; apparatus: "filter-paper"; target: "funnel" };
+  | { type: "fit"; apparatus: "filter-paper"; target: "funnel" }
+  | { type: "connect"; from: string; to: string }
+  | { type: "disconnect"; from: string }
+  | { type: "measure"; apparatus: ApparatusType; with: ApparatusType }
+  | { type: "toggle"; apparatus: ApparatusType }
+  | { type: "identify"; apparatus: ApparatusType };
 
 export type ExperimentCommand =
   ExperimentAction | { type: "undo" } | { type: "reset" } | { type: "check" };
@@ -98,6 +112,53 @@ const apparatusAction = {
         type: { const: "fit" },
         apparatus: { const: "filter-paper" },
         target: { const: "funnel" },
+      },
+    },
+    {
+      type: "object",
+      additionalProperties: false,
+      required: ["type", "from", "to"],
+      properties: {
+        type: { const: "connect" },
+        from: nonEmptyString,
+        to: nonEmptyString,
+      },
+    },
+    {
+      type: "object",
+      additionalProperties: false,
+      required: ["type", "from"],
+      properties: {
+        type: { const: "disconnect" },
+        from: nonEmptyString,
+      },
+    },
+    {
+      type: "object",
+      additionalProperties: false,
+      required: ["type", "apparatus", "with"],
+      properties: {
+        type: { const: "measure" },
+        apparatus: { enum: APPARATUS_TYPES },
+        with: { enum: APPARATUS_TYPES },
+      },
+    },
+    {
+      type: "object",
+      additionalProperties: false,
+      required: ["type", "apparatus"],
+      properties: {
+        type: { const: "toggle" },
+        apparatus: { enum: APPARATUS_TYPES },
+      },
+    },
+    {
+      type: "object",
+      additionalProperties: false,
+      required: ["type", "apparatus"],
+      properties: {
+        type: { const: "identify" },
+        apparatus: { enum: APPARATUS_TYPES },
       },
     },
   ],
@@ -276,11 +337,39 @@ function isAction(value: unknown): value is ExperimentAction {
   if (value.type === "pour") {
     return typeof value.from === "string" && typeof value.to === "string";
   }
-  return (
-    value.type === "fit" &&
-    value.apparatus === "filter-paper" &&
-    value.target === "funnel"
-  );
+  if (value.type === "fit") {
+    return (
+      value.apparatus === "filter-paper" &&
+      value.target === "funnel"
+    );
+  }
+  if (value.type === "connect") {
+    return typeof value.from === "string" && typeof value.to === "string";
+  }
+  if (value.type === "disconnect") {
+    return typeof value.from === "string";
+  }
+  if (value.type === "measure") {
+    return (
+      typeof value.apparatus === "string" &&
+      APPARATUS_TYPES.includes(value.apparatus as ApparatusType) &&
+      typeof value.with === "string" &&
+      APPARATUS_TYPES.includes(value.with as ApparatusType)
+    );
+  }
+  if (value.type === "toggle") {
+    return (
+      typeof value.apparatus === "string" &&
+      APPARATUS_TYPES.includes(value.apparatus as ApparatusType)
+    );
+  }
+  if (value.type === "identify") {
+    return (
+      typeof value.apparatus === "string" &&
+      APPARATUS_TYPES.includes(value.apparatus as ApparatusType)
+    );
+  }
+  return false;
 }
 
 export function definitionErrors(value: unknown): string[] {
@@ -1163,6 +1252,574 @@ export const chromatographyDefinition: ExperimentDefinition = {
       startMs: 0,
       endMs: 4200
     }
+  ],
+  assets: []
+};
+
+export const componentIdentificationDefinition: ExperimentDefinition = {
+  schemaVersion: EXPERIMENT_SCHEMA_VERSION,
+  runtimeVersion: EXPERIMENT_RUNTIME_VERSION,
+  id: "component-identification",
+  title: "Identify Basic Electronic Components",
+  subject: "electronics",
+  version: 1,
+  apparatus: [
+    { id: "resistor", type: "resistor", label: "Resistor" },
+    { id: "led", type: "led", label: "LED" },
+    { id: "battery", type: "battery", label: "Battery (AA)" },
+    { id: "switch", type: "switch", label: "Switch" },
+    { id: "breadboard", type: "breadboard", label: "Breadboard" },
+    { id: "wire", type: "wire", label: "Jumper Wire" },
+    { id: "multimeter", type: "multimeter", label: "Multimeter" }
+  ],
+  steps: [
+    {
+      id: "identify-resistor",
+      instruction: "Identify the resistor by its color bands and cylindrical shape.",
+      ruleId: "identify-resistor",
+      narrationCueId: "cue-resistor"
+    },
+    {
+      id: "identify-led",
+      instruction: "Identify the LED by its clear/colored dome and two legs (anode and cathode).",
+      ruleId: "identify-led",
+      narrationCueId: "cue-led"
+    },
+    {
+      id: "identify-battery",
+      instruction: "Identify the battery by its cylindrical shape with positive and negative terminals.",
+      ruleId: "identify-battery",
+      narrationCueId: "cue-battery"
+    },
+    {
+      id: "identify-switch",
+      instruction: "Identify the switch by its toggle/lever mechanism.",
+      ruleId: "identify-switch",
+      narrationCueId: "cue-switch"
+    },
+    {
+      id: "identify-breadboard",
+      instruction: "Identify the breadboard by its grid of holes for connecting components.",
+      ruleId: "identify-breadboard",
+      narrationCueId: "cue-breadboard"
+    },
+    {
+      id: "identify-wire",
+      instruction: "Identify the jumper wire by its flexible insulation and metal connectors.",
+      ruleId: "identify-wire",
+      narrationCueId: "cue-wire"
+    },
+    {
+      id: "identify-multimeter",
+      instruction: "Identify the multimeter by its display, dial, and probe ports.",
+      ruleId: "identify-multimeter",
+      narrationCueId: "cue-multimeter"
+    }
+  ],
+  rules: [
+    {
+      id: "identify-resistor",
+      action: { type: "identify", apparatus: "resistor" },
+      feedback: "Resistor identified. It limits current flow in a circuit."
+    },
+    {
+      id: "identify-led",
+      action: { type: "identify", apparatus: "led" },
+      feedback: "LED identified. It emits light when current flows in the forward direction."
+    },
+    {
+      id: "identify-battery",
+      action: { type: "identify", apparatus: "battery" },
+      feedback: "Battery identified. It provides the voltage source for the circuit."
+    },
+    {
+      id: "identify-switch",
+      action: { type: "identify", apparatus: "switch" },
+      feedback: "Switch identified. It opens or closes the circuit path."
+    },
+    {
+      id: "identify-breadboard",
+      action: { type: "identify", apparatus: "breadboard" },
+      feedback: "Breadboard identified. It allows temporary connections without soldering."
+    },
+    {
+      id: "identify-wire",
+      action: { type: "identify", apparatus: "wire" },
+      feedback: "Jumper wire identified. It connects components on the breadboard."
+    },
+    {
+      id: "identify-multimeter",
+      action: { type: "identify", apparatus: "multimeter" },
+      outcomeId: "all-identified",
+      feedback: "Multimeter identified. It measures voltage, current, and resistance."
+    }
+  ],
+  outcomes: [
+    {
+      id: "all-identified",
+      title: "All components identified",
+      description: "You have successfully identified all basic electronic components needed for circuit building."
+    }
+  ],
+  scoring: {
+    maxScore: 7,
+    hooks: [{ id: "step-complete", event: "correct_step", points: 1 }]
+  },
+  safeFailure: {
+    message: "That component wasn't recognized.",
+    guidance: "Look at the shape, markings, and terminals to identify each component."
+  },
+  narration: [
+    { id: "cue-resistor", text: "This is a resistor. Notice the colored bands that indicate its resistance value.", startMs: 0, endMs: 3500 },
+    { id: "cue-led", text: "This is an LED — Light Emitting Diode. The longer leg is the anode (positive), the shorter is the cathode (negative).", startMs: 0, endMs: 4000 },
+    { id: "cue-battery", text: "This is a battery. The positive terminal is marked with a plus sign, the negative with a minus.", startMs: 0, endMs: 3500 },
+    { id: "cue-switch", text: "This is a switch. It controls whether current can flow through the circuit.", startMs: 0, endMs: 3000 },
+    { id: "cue-breadboard", text: "This is a breadboard. The holes are connected in rows and columns, allowing you to build circuits without soldering.", startMs: 0, endMs: 4500 },
+    { id: "cue-wire", text: "These are jumper wires. They connect components together on the breadboard.", startMs: 0, endMs: 3000 },
+    { id: "cue-multimeter", text: "This is a multimeter. It can measure voltage, current, and resistance to help you understand your circuit.", startMs: 0, endMs: 4000 }
+  ],
+  captions: [
+    { id: "cue-resistor", text: "Resistor — colored bands show resistance value.", startMs: 0, endMs: 3500 },
+    { id: "cue-led", text: "LED — longer leg is anode (+), shorter is cathode (-).", startMs: 0, endMs: 4000 },
+    { id: "cue-battery", text: "Battery — positive (+) and negative (-) terminals.", startMs: 0, endMs: 3500 },
+    { id: "cue-switch", text: "Switch — opens or closes the circuit.", startMs: 0, endMs: 3000 },
+    { id: "cue-breadboard", text: "Breadboard — grid of connected holes for temporary circuits.", startMs: 0, endMs: 4500 },
+    { id: "cue-wire", text: "Jumper wire — connects components on the breadboard.", startMs: 0, endMs: 3000 },
+    { id: "cue-multimeter", text: "Multimeter — measures voltage, current, and resistance.", startMs: 0, endMs: 4000 }
+  ],
+  assets: []
+};
+
+export const seriesCircuitDefinition: ExperimentDefinition = {
+  schemaVersion: EXPERIMENT_SCHEMA_VERSION,
+  runtimeVersion: EXPERIMENT_RUNTIME_VERSION,
+  id: "series-circuit",
+  title: "Build a Series Circuit",
+  subject: "electronics",
+  version: 1,
+  apparatus: [
+    { id: "battery", type: "battery", label: "Battery (AA)" },
+    { id: "resistor", type: "resistor", label: "Resistor (220Ω)" },
+    { id: "led", type: "led", label: "LED" },
+    { id: "switch", type: "switch", label: "Switch" },
+    { id: "breadboard", type: "breadboard", label: "Breadboard" },
+    { id: "wire1", type: "wire", label: "Red Jumper Wire" },
+    { id: "wire2", type: "wire", label: "Black Jumper Wire" },
+    { id: "wire3", type: "wire", label: "Blue Jumper Wire" },
+    { id: "multimeter", type: "multimeter", label: "Multimeter" }
+  ],
+  steps: [
+    {
+      id: "place-battery",
+      instruction: "Place the battery on the breadboard with positive and negative on separate power rails.",
+      ruleId: "place-battery",
+      narrationCueId: "cue-place-battery"
+    },
+    {
+      id: "connect-resistor",
+      instruction: "Connect the resistor from the positive rail to a row on the breadboard.",
+      ruleId: "connect-resistor",
+      narrationCueId: "cue-connect-resistor"
+    },
+    {
+      id: "connect-led",
+      instruction: "Connect the LED anode (longer leg) to the resistor, cathode to the negative rail.",
+      ruleId: "connect-led",
+      narrationCueId: "cue-connect-led"
+    },
+    {
+      id: "connect-switch",
+      instruction: "Connect the switch in series between the LED cathode and negative rail.",
+      ruleId: "connect-switch",
+      narrationCueId: "cue-connect-switch"
+    },
+    {
+      id: "close-switch",
+      instruction: "Close the switch to complete the circuit and light the LED.",
+      ruleId: "close-switch",
+      narrationCueId: "cue-close-switch"
+    },
+    {
+      id: "measure-voltage",
+      instruction: "Use the multimeter to measure voltage across the LED.",
+      ruleId: "measure-voltage",
+      narrationCueId: "cue-measure-voltage"
+    }
+  ],
+  rules: [
+    {
+      id: "place-battery",
+      action: { type: "place", apparatus: "battery", slot: "power-rails" },
+      feedback: "Battery placed on power rails. Positive on red rail, negative on blue rail."
+    },
+    {
+      id: "connect-resistor",
+      action: { type: "connect", from: "battery", to: "resistor" },
+      feedback: "Resistor connected from positive rail to breadboard row."
+    },
+    {
+      id: "connect-led",
+      action: { type: "connect", from: "resistor", to: "led" },
+      feedback: "LED connected: anode to resistor, cathode toward negative rail."
+    },
+    {
+      id: "connect-switch",
+      action: { type: "connect", from: "led", to: "switch" },
+      feedback: "Switch connected in series with the LED cathode."
+    },
+    {
+      id: "close-switch",
+      action: { type: "toggle", apparatus: "switch" },
+      outcomeId: "circuit-working",
+      feedback: "Switch closed! Current flows and the LED lights up."
+    },
+    {
+      id: "measure-voltage",
+      action: { type: "measure", apparatus: "multimeter", with: "led" },
+      feedback: "Multimeter reads the forward voltage drop across the LED (~2V)."
+    }
+  ],
+  outcomes: [
+    {
+      id: "circuit-working",
+      title: "Series circuit complete",
+      description: "The series circuit is working: battery → resistor → LED → switch → battery. Current flows through all components in one path."
+    }
+  ],
+  scoring: {
+    maxScore: 6,
+    hooks: [{ id: "step-complete", event: "correct_step", points: 1 }]
+  },
+  safeFailure: {
+    message: "The circuit didn't work as expected.",
+    guidance: "Check each connection. In a series circuit, all components must be connected in a single loop."
+  },
+  narration: [
+    { id: "cue-place-battery", text: "Place the battery across the power rails. The positive terminal goes to the red rail, negative to the blue rail.", startMs: 0, endMs: 4000 },
+    { id: "cue-connect-resistor", text: "Connect a wire from the positive rail to a breadboard row, then place the resistor in that row.", startMs: 0, endMs: 4000 },
+    { id: "cue-connect-led", text: "Connect the LED's longer leg (anode) to the other end of the resistor. The shorter leg (cathode) goes toward the negative rail.", startMs: 0, endMs: 4500 },
+    { id: "cue-connect-switch", text: "Insert the switch between the LED cathode and the negative rail. This will let you turn the circuit on and off.", startMs: 0, endMs: 4000 },
+    { id: "cue-close-switch", text: "Close the switch. The circuit is now complete — current flows and the LED lights!", startMs: 0, endMs: 3500 },
+    { id: "cue-measure-voltage", text: "Measure the voltage across the LED with the multimeter. You should see about 2 volts for a red LED.", startMs: 0, endMs: 4000 }
+  ],
+  captions: [
+    { id: "cue-place-battery", text: "Battery on power rails: positive to red, negative to blue.", startMs: 0, endMs: 4000 },
+    { id: "cue-connect-resistor", text: "Resistor from positive rail to breadboard row.", startMs: 0, endMs: 4000 },
+    { id: "cue-connect-led", text: "LED anode to resistor, cathode toward negative rail.", startMs: 0, endMs: 4500 },
+    { id: "cue-connect-switch", text: "Switch in series with LED cathode.", startMs: 0, endMs: 4000 },
+    { id: "cue-close-switch", text: "Close switch — LED lights!", startMs: 0, endMs: 3500 },
+    { id: "cue-measure-voltage", text: "Measure LED voltage drop (~2V for red LED).", startMs: 0, endMs: 4000 }
+  ],
+  assets: []
+};
+
+export const parallelCircuitDefinition: ExperimentDefinition = {
+  schemaVersion: EXPERIMENT_SCHEMA_VERSION,
+  runtimeVersion: EXPERIMENT_RUNTIME_VERSION,
+  id: "parallel-circuit",
+  title: "Build a Parallel Circuit",
+  subject: "electronics",
+  version: 1,
+  apparatus: [
+    { id: "battery", type: "battery", label: "Battery (AA)" },
+    { id: "resistor1", type: "resistor", label: "Resistor 1 (220Ω)" },
+    { id: "resistor2", type: "resistor", label: "Resistor 2 (220Ω)" },
+    { id: "led1", type: "led", label: "LED 1 (Red)" },
+    { id: "led2", type: "led", label: "LED 2 (Green)" },
+    { id: "switch", type: "switch", label: "Switch" },
+    { id: "breadboard", type: "breadboard", label: "Breadboard" },
+    { id: "wire1", type: "wire", label: "Red Jumper Wire" },
+    { id: "wire2", type: "wire", label: "Black Jumper Wire" },
+    { id: "wire3", type: "wire", label: "Blue Jumper Wire" },
+    { id: "wire4", type: "wire", label: "Yellow Jumper Wire" },
+    { id: "multimeter", type: "multimeter", label: "Multimeter" }
+  ],
+  steps: [
+    {
+      id: "place-battery",
+      instruction: "Place the battery on the breadboard power rails.",
+      ruleId: "place-battery",
+      narrationCueId: "cue-place-battery"
+    },
+    {
+      id: "build-first-branch",
+      instruction: "Build the first branch: connect resistor1 and LED1 in series from positive to negative rail.",
+      ruleId: "build-first-branch",
+      narrationCueId: "cue-first-branch"
+    },
+    {
+      id: "build-second-branch",
+      instruction: "Build the second branch: connect resistor2 and LED2 in series from positive to negative rail (separate rows).",
+      ruleId: "build-second-branch",
+      narrationCueId: "cue-second-branch"
+    },
+    {
+      id: "connect-switch",
+      instruction: "Connect the switch on the main negative rail to control both branches.",
+      ruleId: "connect-switch",
+      narrationCueId: "cue-connect-switch"
+    },
+    {
+      id: "close-switch",
+      instruction: "Close the switch to complete both parallel paths.",
+      ruleId: "close-switch",
+      narrationCueId: "cue-close-switch"
+    },
+    {
+      id: "measure-current",
+      instruction: "Use the multimeter to measure total current from the battery.",
+      ruleId: "measure-current",
+      narrationCueId: "cue-measure-current"
+    }
+  ],
+  rules: [
+    {
+      id: "place-battery",
+      action: { type: "place", apparatus: "battery", slot: "power-rails" },
+      feedback: "Battery placed on power rails."
+    },
+    {
+      id: "build-first-branch",
+      action: { type: "connect", from: "resistor1", to: "led1" },
+      feedback: "First branch complete: resistor1 → LED1 across the power rails."
+    },
+    {
+      id: "build-second-branch",
+      action: { type: "connect", from: "resistor2", to: "led2" },
+      feedback: "Second branch complete: resistor2 → LED2 across the power rails."
+    },
+    {
+      id: "connect-switch",
+      action: { type: "connect", from: "switch", to: "battery" },
+      feedback: "Switch connected on the negative rail to control both branches."
+    },
+    {
+      id: "close-switch",
+      action: { type: "toggle", apparatus: "switch" },
+      outcomeId: "parallel-working",
+      feedback: "Both LEDs light! Each branch gets full voltage independently."
+    },
+    {
+      id: "measure-current",
+      action: { type: "measure", apparatus: "multimeter", with: "battery" },
+      feedback: "Total current equals the sum of both branch currents."
+    }
+  ],
+  outcomes: [
+    {
+      id: "parallel-working",
+      title: "Parallel circuit complete",
+      description: "Two parallel branches each with a resistor and LED. Both LEDs receive full battery voltage and operate independently."
+    }
+  ],
+  scoring: {
+    maxScore: 6,
+    hooks: [{ id: "step-complete", event: "correct_step", points: 1 }]
+  },
+  safeFailure: {
+    message: "The parallel circuit isn't working correctly.",
+    guidance: "In a parallel circuit, each branch connects directly across the power rails. Check that both branches have their own complete path."
+  },
+  narration: [
+    { id: "cue-place-battery", text: "Place the battery on the power rails. Positive to red, negative to blue.", startMs: 0, endMs: 3500 },
+    { id: "cue-first-branch", text: "Build the first branch: connect a resistor and LED in series from the positive rail to the negative rail.", startMs: 0, endMs: 4500 },
+    { id: "cue-second-branch", text: "Build the second branch on a different row: another resistor and LED from positive to negative rail. Each branch is independent.", startMs: 0, endMs: 5000 },
+    { id: "cue-connect-switch", text: "Add a switch on the negative rail to control power to both branches at once.", startMs: 0, endMs: 3500 },
+    { id: "cue-close-switch", text: "Close the switch. Both LEDs light up! In parallel, each branch gets the full battery voltage.", startMs: 0, endMs: 4000 },
+    { id: "cue-measure-current", text: "Measure the total current from the battery. It equals the sum of currents through each branch.", startMs: 0, endMs: 4000 }
+  ],
+  captions: [
+    { id: "cue-place-battery", text: "Battery on power rails.", startMs: 0, endMs: 3500 },
+    { id: "cue-first-branch", text: "First branch: resistor + LED from + to - rail.", startMs: 0, endMs: 4500 },
+    { id: "cue-second-branch", text: "Second branch: separate resistor + LED from + to - rail.", startMs: 0, endMs: 5000 },
+    { id: "cue-connect-switch", text: "Switch on negative rail controls both branches.", startMs: 0, endMs: 3500 },
+    { id: "cue-close-switch", text: "Close switch — both LEDs light independently!", startMs: 0, endMs: 4000 },
+    { id: "cue-measure-current", text: "Total current = sum of branch currents.", startMs: 0, endMs: 4000 }
+  ],
+  assets: []
+};
+
+export const faultDiagnosisDefinition: ExperimentDefinition = {
+  schemaVersion: EXPERIMENT_SCHEMA_VERSION,
+  runtimeVersion: EXPERIMENT_RUNTIME_VERSION,
+  id: "fault-diagnosis",
+  title: "Diagnose Simple Circuit Faults",
+  subject: "electronics",
+  version: 1,
+  apparatus: [
+    { id: "battery", type: "battery", label: "Battery (AA)" },
+    { id: "resistor", type: "resistor", label: "Resistor (220Ω)" },
+    { id: "led", type: "led", label: "LED" },
+    { id: "breadboard", type: "breadboard", label: "Breadboard" },
+    { id: "wire1", type: "wire", label: "Red Jumper Wire" },
+    { id: "wire2", type: "wire", label: "Black Jumper Wire" },
+    { id: "multimeter", type: "multimeter", label: "Multimeter" }
+  ],
+  steps: [
+    {
+      id: "build-working-circuit",
+      instruction: "First, build a working series circuit: battery → resistor → LED.",
+      ruleId: "build-working-circuit",
+      narrationCueId: "cue-build-working"
+    },
+    {
+      id: "introduce-open-circuit",
+      instruction: "Remove the resistor to create an open circuit fault.",
+      ruleId: "introduce-open-circuit",
+      narrationCueId: "cue-open-circuit"
+    },
+    {
+      id: "diagnose-open-circuit",
+      instruction: "Use the multimeter to measure voltage across the gap. Full battery voltage appears across the open.",
+      ruleId: "diagnose-open-circuit",
+      narrationCueId: "cue-diagnose-open"
+    },
+    {
+      id: "restore-resistor",
+      instruction: "Replace the resistor to restore the circuit.",
+      ruleId: "restore-resistor",
+      narrationCueId: "cue-restore-resistor"
+    },
+    {
+      id: "introduce-short-circuit",
+      instruction: "Create a short circuit by connecting a wire directly across the LED (bypassing it).",
+      ruleId: "introduce-short-circuit",
+      narrationCueId: "cue-short-circuit"
+    },
+    {
+      id: "diagnose-short-circuit",
+      instruction: "Measure current — it will be very high. The LED is bypassed and won't light.",
+      ruleId: "diagnose-short-circuit",
+      narrationCueId: "cue-diagnose-short"
+    },
+    {
+      id: "fix-short-circuit",
+      instruction: "Remove the shorting wire. The LED lights again.",
+      ruleId: "fix-short-circuit",
+      narrationCueId: "cue-fix-short"
+    },
+    {
+      id: "reverse-led",
+      instruction: "Reverse the LED (swap anode and cathode). The LED won't light — it's reverse-biased.",
+      ruleId: "reverse-led",
+      narrationCueId: "cue-reverse-led"
+    },
+    {
+      id: "diagnose-reverse-led",
+      instruction: "Measure voltage across the LED — you'll see full battery voltage but no current.",
+      ruleId: "diagnose-reverse-led",
+      narrationCueId: "cue-diagnose-reverse"
+    },
+    {
+      id: "correct-led",
+      instruction: "Correct the LED orientation. The circuit works again.",
+      ruleId: "correct-led",
+      narrationCueId: "cue-correct-led"
+    }
+  ],
+  rules: [
+    {
+      id: "build-working-circuit",
+      action: { type: "connect", from: "battery", to: "resistor" },
+      feedback: "Working circuit built: battery → resistor → LED. LED lights."
+    },
+    {
+      id: "introduce-open-circuit",
+      action: { type: "disconnect", from: "resistor" },
+      feedback: "Resistor removed. Open circuit — LED is off."
+    },
+    {
+      id: "diagnose-open-circuit",
+      action: { type: "measure", apparatus: "multimeter", with: "resistor" },
+      feedback: "Multimeter shows full battery voltage across the open gap. No current flows."
+    },
+    {
+      id: "restore-resistor",
+      action: { type: "connect", from: "battery", to: "resistor" },
+      feedback: "Resistor restored. LED lights again."
+    },
+    {
+      id: "introduce-short-circuit",
+      action: { type: "connect", from: "wire1", to: "led" },
+      feedback: "Wire placed across LED terminals — short circuit! LED is bypassed and off."
+    },
+    {
+      id: "diagnose-short-circuit",
+      action: { type: "measure", apparatus: "multimeter", with: "battery" },
+      outcomeId: "short-diagnosed",
+      feedback: "High current detected! LED has zero voltage across it — it's shorted out."
+    },
+    {
+      id: "fix-short-circuit",
+      action: { type: "disconnect", from: "wire1" },
+      feedback: "Shorting wire removed. LED lights normally."
+    },
+    {
+      id: "reverse-led",
+      action: { type: "place", apparatus: "led", slot: "reversed" },
+      feedback: "LED reversed (cathode to resistor, anode to negative). LED is off — reverse biased."
+    },
+    {
+      id: "diagnose-reverse-led",
+      action: { type: "measure", apparatus: "multimeter", with: "led" },
+      outcomeId: "reverse-diagnosed",
+      feedback: "Full battery voltage across LED but no current. LED is reverse-biased."
+    },
+    {
+      id: "correct-led",
+      action: { type: "place", apparatus: "led", slot: "correct" },
+      outcomeId: "all-faults-diagnosed",
+      feedback: "LED corrected. Circuit works! You've diagnosed open, short, and reverse-bias faults."
+    }
+  ],
+  outcomes: [
+    {
+      id: "short-diagnosed",
+      title: "Short circuit diagnosed",
+      description: "A short circuit bypasses the LED, causing high current and zero voltage across the LED."
+    },
+    {
+      id: "reverse-diagnosed",
+      title: "Reverse-biased LED diagnosed",
+      description: "An LED only conducts in one direction. Reversed, it blocks current despite full voltage across it."
+    },
+    {
+      id: "all-faults-diagnosed",
+      title: "All common faults diagnosed",
+      description: "You identified and fixed three common circuit faults: open circuit (broken path), short circuit (unintended bypass), and reverse-biased LED (wrong polarity)."
+    }
+  ],
+  scoring: {
+    maxScore: 10,
+    hooks: [{ id: "step-complete", event: "correct_step", points: 1 }]
+  },
+  safeFailure: {
+    message: "The fault wasn't identified correctly.",
+    guidance: "Use the multimeter systematically: check voltage across components, then current. Compare readings to a working circuit."
+  },
+  narration: [
+    { id: "cue-build-working", text: "Build a working series circuit first: battery, resistor, LED in a loop. The LED lights.", startMs: 0, endMs: 4000 },
+    { id: "cue-open-circuit", text: "Now remove the resistor. This creates an open circuit — a broken path. The LED goes out.", startMs: 0, endMs: 4000 },
+    { id: "cue-diagnose-open", text: "Measure voltage across the gap. You'll see the full battery voltage because no current flows through the open.", startMs: 0, endMs: 4500 },
+    { id: "cue-restore-resistor", text: "Replace the resistor. The circuit is complete again and the LED lights.", startMs: 0, endMs: 3500 },
+    { id: "cue-short-circuit", text: "Now create a short: place a wire directly across the LED terminals. The LED is bypassed and goes out.", startMs: 0, endMs: 4500 },
+    { id: "cue-diagnose-short", text: "Measure current from the battery. It's very high! The LED has zero volts across it — it's shorted.", startMs: 0, endMs: 4500 },
+    { id: "cue-fix-short", text: "Remove the shorting wire. The LED lights again. Short circuits are dangerous — they can damage components.", startMs: 0, endMs: 4000 },
+    { id: "cue-reverse-led", text: "Now reverse the LED — swap its legs. The LED won't light because it's reverse-biased.", startMs: 0, endMs: 4000 },
+    { id: "cue-diagnose-reverse", text: "Measure voltage across the LED. Full battery voltage, but no current flows. The LED blocks current in reverse.", startMs: 0, endMs: 4500 },
+    { id: "cue-correct-led", text: "Fix the LED orientation. The circuit works! You've learned to diagnose open circuits, short circuits, and reverse polarity.", startMs: 0, endMs: 4500 }
+  ],
+  captions: [
+    { id: "cue-build-working", text: "Working circuit: battery → resistor → LED.", startMs: 0, endMs: 4000 },
+    { id: "cue-open-circuit", text: "Open circuit: remove resistor — LED off.", startMs: 0, endMs: 4000 },
+    { id: "cue-diagnose-open", text: "Measure across gap — full battery voltage, no current.", startMs: 0, endMs: 4500 },
+    { id: "cue-restore-resistor", text: "Restore resistor — LED lights.", startMs: 0, endMs: 3500 },
+    { id: "cue-short-circuit", text: "Short circuit: wire across LED — LED off.", startMs: 0, endMs: 4500 },
+    { id: "cue-diagnose-short", text: "High current, zero volts across LED — shorted!", startMs: 0, endMs: 4500 },
+    { id: "cue-fix-short", text: "Remove short — LED lights. Shorts are dangerous.", startMs: 0, endMs: 4000 },
+    { id: "cue-reverse-led", text: "Reverse LED — LED off (reverse biased).", startMs: 0, endMs: 4000 },
+    { id: "cue-diagnose-reverse", text: "Full voltage across LED, no current — reverse biased.", startMs: 0, endMs: 4500 },
+    { id: "cue-correct-led", text: "Fix LED — works! Diagnosed: open, short, reverse bias.", startMs: 0, endMs: 4500 }
   ],
   assets: []
 };

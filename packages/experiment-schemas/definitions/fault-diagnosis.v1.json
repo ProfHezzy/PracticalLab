@@ -1,0 +1,184 @@
+{
+  "schemaVersion": "1.1",
+  "runtimeVersion": "1.0.0",
+  "id": "fault-diagnosis",
+  "title": "Diagnose Simple Circuit Faults",
+  "subject": "electronics",
+  "version": 1,
+  "apparatus": [
+    { "id": "battery", "type": "battery", "label": "Battery (AA)" },
+    { "id": "resistor", "type": "resistor", "label": "Resistor (220Ω)" },
+    { "id": "led", "type": "led", "label": "LED" },
+    { "id": "breadboard", "type": "breadboard", "label": "Breadboard" },
+    { "id": "wire1", "type": "wire", "label": "Red Jumper Wire" },
+    { "id": "wire2", "type": "wire", "label": "Black Jumper Wire" },
+    { "id": "multimeter", "type": "multimeter", "label": "Multimeter" }
+  ],
+  "steps": [
+    {
+      "id": "build-working-circuit",
+      "instruction": "First, build a working series circuit: battery → resistor → LED.",
+      "ruleId": "build-working-circuit",
+      "narrationCueId": "cue-build-working"
+    },
+    {
+      "id": "introduce-open-circuit",
+      "instruction": "Remove the resistor to create an open circuit fault.",
+      "ruleId": "introduce-open-circuit",
+      "narrationCueId": "cue-open-circuit"
+    },
+    {
+      "id": "diagnose-open-circuit",
+      "instruction": "Use the multimeter to measure voltage across the gap. Full battery voltage appears across the open.",
+      "ruleId": "diagnose-open-circuit",
+      "narrationCueId": "cue-diagnose-open"
+    },
+    {
+      "id": "restore-resistor",
+      "instruction": "Replace the resistor to restore the circuit.",
+      "ruleId": "restore-resistor",
+      "narrationCueId": "cue-restore-resistor"
+    },
+    {
+      "id": "introduce-short-circuit",
+      "instruction": "Create a short circuit by connecting a wire directly across the LED (bypassing it).",
+      "ruleId": "introduce-short-circuit",
+      "narrationCueId": "cue-short-circuit"
+    },
+    {
+      "id": "diagnose-short-circuit",
+      "instruction": "Measure current — it will be very high. The LED is bypassed and won't light.",
+      "ruleId": "diagnose-short-circuit",
+      "narrationCueId": "cue-diagnose-short"
+    },
+    {
+      "id": "fix-short-circuit",
+      "instruction": "Remove the shorting wire. The LED lights again.",
+      "ruleId": "fix-short-circuit",
+      "narrationCueId": "cue-fix-short"
+    },
+    {
+      "id": "reverse-led",
+      "instruction": "Reverse the LED (swap anode and cathode). The LED won't light — it's reverse-biased.",
+      "ruleId": "reverse-led",
+      "narrationCueId": "cue-reverse-led"
+    },
+    {
+      "id": "diagnose-reverse-led",
+      "instruction": "Measure voltage across the LED — you'll see full battery voltage but no current.",
+      "ruleId": "diagnose-reverse-led",
+      "narrationCueId": "cue-diagnose-reverse"
+    },
+    {
+      "id": "correct-led",
+      "instruction": "Correct the LED orientation. The circuit works again.",
+      "ruleId": "correct-led",
+      "narrationCueId": "cue-correct-led"
+    }
+  ],
+  "rules": [
+    {
+      "id": "build-working-circuit",
+      "action": { "type": "connect", "from": "battery", "to": "resistor" },
+      "feedback": "Working circuit built: battery → resistor → LED. LED lights."
+    },
+    {
+      "id": "introduce-open-circuit",
+      "action": { "type": "disconnect", "from": "resistor" },
+      "feedback": "Resistor removed. Open circuit — LED is off."
+    },
+    {
+      "id": "diagnose-open-circuit",
+      "action": { "type": "measure", "apparatus": "multimeter", "with": "resistor" },
+      "feedback": "Multimeter shows full battery voltage across the open gap. No current flows."
+    },
+    {
+      "id": "restore-resistor",
+      "action": { "type": "connect", "from": "battery", "to": "resistor" },
+      "feedback": "Resistor restored. LED lights again."
+    },
+    {
+      "id": "introduce-short-circuit",
+      "action": { "type": "connect", "from": "wire1", "to": "led" },
+      "feedback": "Wire placed across LED terminals — short circuit! LED is bypassed and off."
+    },
+    {
+      "id": "diagnose-short-circuit",
+      "action": { "type": "measure", "apparatus": "multimeter", "with": "battery" },
+      "outcomeId": "short-diagnosed",
+      "feedback": "High current detected! LED has zero voltage across it — it's shorted out."
+    },
+    {
+      "id": "fix-short-circuit",
+      "action": { "type": "disconnect", "from": "wire1" },
+      "feedback": "Shorting wire removed. LED lights normally."
+    },
+    {
+      "id": "reverse-led",
+      "action": { "type": "place", "apparatus": "led", "slot": "reversed" },
+      "feedback": "LED reversed (cathode to resistor, anode to negative). LED is off — reverse biased."
+    },
+    {
+      "id": "diagnose-reverse-led",
+      "action": { "type": "measure", "apparatus": "multimeter", "with": "led" },
+      "outcomeId": "reverse-diagnosed",
+      "feedback": "Full battery voltage across LED but no current. LED is reverse-biased."
+    },
+    {
+      "id": "correct-led",
+      "action": { "type": "place", "apparatus": "led", "slot": "correct" },
+      "outcomeId": "all-faults-diagnosed",
+      "feedback": "LED corrected. Circuit works! You've diagnosed open, short, and reverse-bias faults."
+    }
+  ],
+  "outcomes": [
+    {
+      "id": "short-diagnosed",
+      "title": "Short circuit diagnosed",
+      "description": "A short circuit bypasses the LED, causing high current and zero voltage across the LED."
+    },
+    {
+      "id": "reverse-diagnosed",
+      "title": "Reverse-biased LED diagnosed",
+      "description": "An LED only conducts in one direction. Reversed, it blocks current despite full voltage across it."
+    },
+    {
+      "id": "all-faults-diagnosed",
+      "title": "All common faults diagnosed",
+      "description": "You identified and fixed three common circuit faults: open circuit (broken path), short circuit (unintended bypass), and reverse-biased LED (wrong polarity)."
+    }
+  ],
+  "scoring": {
+    "maxScore": 10,
+    "hooks": [{ "id": "step-complete", "event": "correct_step", "points": 1 }]
+  },
+  "safeFailure": {
+    "message": "The fault wasn't identified correctly.",
+    "guidance": "Use the multimeter systematically: check voltage across components, then current. Compare readings to a working circuit."
+  },
+  "narration": [
+    { "id": "cue-build-working", "text": "Build a working series circuit first: battery, resistor, LED in a loop. The LED lights.", "startMs": 0, "endMs": 4000 },
+    { "id": "cue-open-circuit", "text": "Now remove the resistor. This creates an open circuit — a broken path. The LED goes out.", "startMs": 0, "endMs": 4000 },
+    { "id": "cue-diagnose-open", "text": "Measure voltage across the gap. You'll see the full battery voltage because no current flows through the open.", "startMs": 0, "endMs": 4500 },
+    { "id": "cue-restore-resistor", "text": "Replace the resistor. The circuit is complete again and the LED lights.", "startMs": 0, "endMs": 3500 },
+    { "id": "cue-short-circuit", "text": "Now create a short: place a wire directly across the LED terminals. The LED is bypassed and goes out.", "startMs": 0, "endMs": 4500 },
+    { "id": "cue-diagnose-short", "text": "Measure current from the battery. It's very high! The LED has zero volts across it — it's shorted.", "startMs": 0, "endMs": 4500 },
+    { "id": "cue-fix-short", "text": "Remove the shorting wire. The LED lights again. Short circuits are dangerous — they can damage components.", "startMs": 0, "endMs": 4000 },
+    { "id": "cue-reverse-led", "text": "Now reverse the LED — swap its legs. The LED won't light because it's reverse-biased.", "startMs": 0, "endMs": 4000 },
+    { "id": "cue-diagnose-reverse", "text": "Measure voltage across the LED. Full battery voltage, but no current flows. The LED blocks current in reverse.", "startMs": 0, "endMs": 4500 },
+    { "id": "cue-correct-led", "text": "Fix the LED orientation. The circuit works! You've learned to diagnose open circuits, short circuits, and reverse polarity.", "startMs": 0, "endMs": 4500 }
+  ],
+  "captions": [
+    { "id": "cue-build-working", "text": "Working circuit: battery → resistor → LED.", "startMs": 0, "endMs": 4000 },
+    { "id": "cue-open-circuit", "text": "Open circuit: remove resistor — LED off.", "startMs": 0, "endMs": 4000 },
+    { "id": "cue-diagnose-open", "text": "Measure across gap — full battery voltage, no current.", "startMs": 0, "endMs": 4500 },
+    { "id": "cue-restore-resistor", "text": "Restore resistor — LED lights.", "startMs": 0, "endMs": 3500 },
+    { "id": "cue-short-circuit", "text": "Short circuit: wire across LED — LED off.", "startMs": 0, "endMs": 4500 },
+    { "id": "cue-diagnose-short", "text": "High current, zero volts across LED — shorted!", "startMs": 0, "endMs": 4500 },
+    { "id": "cue-fix-short", "text": "Remove short — LED lights. Shorts are dangerous.", "startMs": 0, "endMs": 4000 },
+    { "id": "cue-reverse-led", "text": "Reverse LED — LED off (reverse biased).", "startMs": 0, "endMs": 4000 },
+    { "id": "cue-diagnose-reverse", "text": "Full voltage across LED, no current — reverse biased.", "startMs": 0, "endMs": 4500 },
+    { "id": "cue-correct-led", "text": "Fix LED — works! Diagnosed: open, short, reverse bias.", "startMs": 0, "endMs": 4500 }
+  ],
+  "assets": []
+}

@@ -90,12 +90,25 @@ function sameAction(left: ExperimentAction, right: ExperimentAction): boolean {
   if (left.type === "place" && right.type === "place") {
     return left.apparatus === right.apparatus && left.slot === right.slot;
   }
-  return (
-    left.type === "pour" &&
-    right.type === "pour" &&
-    left.from === right.from &&
-    left.to === right.to
-  );
+  if (left.type === "pour" && right.type === "pour") {
+    return left.from === right.from && left.to === right.to;
+  }
+  if (left.type === "connect" && right.type === "connect") {
+    return left.from === right.from && left.to === right.to;
+  }
+  if (left.type === "disconnect" && right.type === "disconnect") {
+    return left.from === right.from;
+  }
+  if (left.type === "measure" && right.type === "measure") {
+    return left.apparatus === right.apparatus && left.with === right.with;
+  }
+  if (left.type === "toggle" && right.type === "toggle") {
+    return left.apparatus === right.apparatus;
+  }
+  if (left.type === "identify" && right.type === "identify") {
+    return left.apparatus === right.apparatus;
+  }
+  return false;
 }
 
 function updateApparatus(
@@ -107,6 +120,15 @@ function updateApparatus(
     next[action.apparatus] = { location: action.target, prepared: true };
   } else if (action.type === "place") {
     next[action.apparatus] = { location: action.slot, prepared: true };
+  } else if (action.type === "connect") {
+    next[action.from] = { location: action.to, prepared: true };
+    next[action.to] = { location: action.from, prepared: true };
+  } else if (action.type === "disconnect") {
+    next[action.from] = { location: "tray", prepared: false };
+  } else if (action.type === "toggle") {
+    if (next[action.apparatus]) {
+      next[action.apparatus] = { ...next[action.apparatus], prepared: !next[action.apparatus].prepared };
+    }
   }
   return next;
 }

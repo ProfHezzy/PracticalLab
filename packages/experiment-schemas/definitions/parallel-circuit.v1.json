@@ -1,0 +1,125 @@
+{
+  "schemaVersion": "1.1",
+  "runtimeVersion": "1.0.0",
+  "id": "parallel-circuit",
+  "title": "Build a Parallel Circuit",
+  "subject": "electronics",
+  "version": 1,
+  "apparatus": [
+    { "id": "battery", "type": "battery", "label": "Battery (AA)" },
+    { "id": "resistor1", "type": "resistor", "label": "Resistor 1 (220Ω)" },
+    { "id": "resistor2", "type": "resistor", "label": "Resistor 2 (220Ω)" },
+    { "id": "led1", "type": "led", "label": "LED 1 (Red)" },
+    { "id": "led2", "type": "led", "label": "LED 2 (Green)" },
+    { "id": "switch", "type": "switch", "label": "Switch" },
+    { "id": "breadboard", "type": "breadboard", "label": "Breadboard" },
+    { "id": "wire1", "type": "wire", "label": "Red Jumper Wire" },
+    { "id": "wire2", "type": "wire", "label": "Black Jumper Wire" },
+    { "id": "wire3", "type": "wire", "label": "Blue Jumper Wire" },
+    { "id": "wire4", "type": "wire", "label": "Yellow Jumper Wire" },
+    { "id": "multimeter", "type": "multimeter", "label": "Multimeter" }
+  ],
+  "steps": [
+    {
+      "id": "place-battery",
+      "instruction": "Place the battery on the breadboard power rails.",
+      "ruleId": "place-battery",
+      "narrationCueId": "cue-place-battery"
+    },
+    {
+      "id": "build-first-branch",
+      "instruction": "Build the first branch: connect resistor1 and LED1 in series from positive to negative rail.",
+      "ruleId": "build-first-branch",
+      "narrationCueId": "cue-first-branch"
+    },
+    {
+      "id": "build-second-branch",
+      "instruction": "Build the second branch: connect resistor2 and LED2 in series from positive to negative rail (separate rows).",
+      "ruleId": "build-second-branch",
+      "narrationCueId": "cue-second-branch"
+    },
+    {
+      "id": "connect-switch",
+      "instruction": "Connect the switch on the main negative rail to control both branches.",
+      "ruleId": "connect-switch",
+      "narrationCueId": "cue-connect-switch"
+    },
+    {
+      "id": "close-switch",
+      "instruction": "Close the switch to complete both parallel paths.",
+      "ruleId": "close-switch",
+      "narrationCueId": "cue-close-switch"
+    },
+    {
+      "id": "measure-current",
+      "instruction": "Use the multimeter to measure total current from the battery.",
+      "ruleId": "measure-current",
+      "narrationCueId": "cue-measure-current"
+    }
+  ],
+  "rules": [
+    {
+      "id": "place-battery",
+      "action": { "type": "place", "apparatus": "battery", "slot": "power-rails" },
+      "feedback": "Battery placed on power rails."
+    },
+    {
+      "id": "build-first-branch",
+      "action": { "type": "connect", "from": "resistor1", "to": "led1" },
+      "feedback": "First branch complete: resistor1 → LED1 across the power rails."
+    },
+    {
+      "id": "build-second-branch",
+      "action": { "type": "connect", "from": "resistor2", "to": "led2" },
+      "feedback": "Second branch complete: resistor2 → LED2 across the power rails."
+    },
+    {
+      "id": "connect-switch",
+      "action": { "type": "connect", "from": "switch", "to": "battery" },
+      "feedback": "Switch connected on the negative rail to control both branches."
+    },
+    {
+      "id": "close-switch",
+      "action": { "type": "toggle", "apparatus": "switch" },
+      "outcomeId": "parallel-working",
+      "feedback": "Both LEDs light! Each branch gets full voltage independently."
+    },
+    {
+      "id": "measure-current",
+      "action": { "type": "measure", "apparatus": "multimeter", "with": "battery" },
+      "feedback": "Total current equals the sum of both branch currents."
+    }
+  ],
+  "outcomes": [
+    {
+      "id": "parallel-working",
+      "title": "Parallel circuit complete",
+      "description": "Two parallel branches each with a resistor and LED. Both LEDs receive full battery voltage and operate independently."
+    }
+  ],
+  "scoring": {
+    "maxScore": 6,
+    "hooks": [{ "id": "step-complete", "event": "correct_step", "points": 1 }]
+  },
+  "safeFailure": {
+    "message": "The parallel circuit isn't working correctly.",
+    "guidance": "In a parallel circuit, each branch connects directly across the power rails. Check that both branches have their own complete path."
+  },
+  "narration": [
+    { "id": "cue-place-battery", "text": "Place the battery on the power rails. Positive to red, negative to blue.", "startMs": 0, "endMs": 3500 },
+    { "id": "cue-first-branch", "text": "Build the first branch: connect a resistor and LED in series from the positive rail to the negative rail.", "startMs": 0, "endMs": 4500 },
+    { "id": "cue-second-branch", "text": "Build the second branch on a different row: another resistor and LED from positive to negative rail. Each branch is independent.", "startMs": 0, "endMs": 5000 },
+    { "id": "cue-connect-switch", "text": "Add a switch on the negative rail to control power to both branches at once.", "startMs": 0, "endMs": 3500 },
+    { "id": "cue-close-switch", "text": "Close the switch. Both LEDs light up! In parallel, each branch gets the full battery voltage.", "startMs": 0, "endMs": 4000 },
+    { "id": "cue-measure-current", "text": "Measure the total current from the battery. It equals the sum of currents through each branch.", "startMs": 0, "endMs": 4000 }
+  ],
+  "captions": [
+    { "id": "cue-place-battery", "text": "Battery on power rails.", "startMs": 0, "endMs": 3500 },
+    { "id": "cue-first-branch", "text": "First branch: resistor + LED from + to - rail.", "startMs": 0, "endMs": 4500 },
+    { "id": "cue-second-branch", "text": "Second branch: separate resistor + LED from + to - rail.", "startMs": 0, "endMs": 5000 },
+    { "id": "cue-connect-switch", "text": "Switch on negative rail controls both branches.", "startMs": 0, "endMs": 3500 },
+    { "id": "cue-close-switch", "text": "Close switch — both LEDs light independently!", "startMs": 0, "endMs": 4000 },
+    { "id": "cue-measure-current", "text": "Total current = sum of branch currents.", "startMs": 0, "endMs": 4000 }
+  ],
+  "assets": []
+}

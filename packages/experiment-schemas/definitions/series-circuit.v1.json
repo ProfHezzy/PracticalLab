@@ -1,0 +1,122 @@
+{
+  "schemaVersion": "1.1",
+  "runtimeVersion": "1.0.0",
+  "id": "series-circuit",
+  "title": "Build a Series Circuit",
+  "subject": "electronics",
+  "version": 1,
+  "apparatus": [
+    { "id": "battery", "type": "battery", "label": "Battery (AA)" },
+    { "id": "resistor", "type": "resistor", "label": "Resistor (220Ω)" },
+    { "id": "led", "type": "led", "label": "LED" },
+    { "id": "switch", "type": "switch", "label": "Switch" },
+    { "id": "breadboard", "type": "breadboard", "label": "Breadboard" },
+    { "id": "wire1", "type": "wire", "label": "Red Jumper Wire" },
+    { "id": "wire2", "type": "wire", "label": "Black Jumper Wire" },
+    { "id": "wire3", "type": "wire", "label": "Blue Jumper Wire" },
+    { "id": "multimeter", "type": "multimeter", "label": "Multimeter" }
+  ],
+  "steps": [
+    {
+      "id": "place-battery",
+      "instruction": "Place the battery on the breadboard with positive and negative on separate power rails.",
+      "ruleId": "place-battery",
+      "narrationCueId": "cue-place-battery"
+    },
+    {
+      "id": "connect-resistor",
+      "instruction": "Connect the resistor from the positive rail to a row on the breadboard.",
+      "ruleId": "connect-resistor",
+      "narrationCueId": "cue-connect-resistor"
+    },
+    {
+      "id": "connect-led",
+      "instruction": "Connect the LED anode (longer leg) to the resistor, cathode to the negative rail.",
+      "ruleId": "connect-led",
+      "narrationCueId": "cue-connect-led"
+    },
+    {
+      "id": "connect-switch",
+      "instruction": "Connect the switch in series between the LED cathode and negative rail.",
+      "ruleId": "connect-switch",
+      "narrationCueId": "cue-connect-switch"
+    },
+    {
+      "id": "close-switch",
+      "instruction": "Close the switch to complete the circuit and light the LED.",
+      "ruleId": "close-switch",
+      "narrationCueId": "cue-close-switch"
+    },
+    {
+      "id": "measure-voltage",
+      "instruction": "Use the multimeter to measure voltage across the LED.",
+      "ruleId": "measure-voltage",
+      "narrationCueId": "cue-measure-voltage"
+    }
+  ],
+  "rules": [
+    {
+      "id": "place-battery",
+      "action": { "type": "place", "apparatus": "battery", "slot": "power-rails" },
+      "feedback": "Battery placed on power rails. Positive on red rail, negative on blue rail."
+    },
+    {
+      "id": "connect-resistor",
+      "action": { "type": "connect", "from": "battery", "to": "resistor" },
+      "feedback": "Resistor connected from positive rail to breadboard row."
+    },
+    {
+      "id": "connect-led",
+      "action": { "type": "connect", "from": "resistor", "to": "led" },
+      "feedback": "LED connected: anode to resistor, cathode toward negative rail."
+    },
+    {
+      "id": "connect-switch",
+      "action": { "type": "connect", "from": "led", "to": "switch" },
+      "feedback": "Switch connected in series with the LED cathode."
+    },
+    {
+      "id": "close-switch",
+      "action": { "type": "toggle", "apparatus": "switch" },
+      "outcomeId": "circuit-working",
+      "feedback": "Switch closed! Current flows and the LED lights up."
+    },
+    {
+      "id": "measure-voltage",
+      "action": { "type": "measure", "apparatus": "multimeter", "with": "led" },
+      "feedback": "Multimeter reads the forward voltage drop across the LED (~2V)."
+    }
+  ],
+  "outcomes": [
+    {
+      "id": "circuit-working",
+      "title": "Series circuit complete",
+      "description": "The series circuit is working: battery → resistor → LED → switch → battery. Current flows through all components in one path."
+    }
+  ],
+  "scoring": {
+    "maxScore": 6,
+    "hooks": [{ "id": "step-complete", "event": "correct_step", "points": 1 }]
+  },
+  "safeFailure": {
+    "message": "The circuit didn't work as expected.",
+    "guidance": "Check each connection. In a series circuit, all components must be connected in a single loop."
+  },
+  "narration": [
+    { "id": "cue-place-battery", "text": "Place the battery across the power rails. The positive terminal goes to the red rail, negative to the blue rail.", "startMs": 0, "endMs": 4000 },
+    { "id": "cue-connect-resistor", "text": "Connect a wire from the positive rail to a breadboard row, then place the resistor in that row.", "startMs": 0, "endMs": 4000 },
+    { "id": "cue-connect-led", "text": "Connect the LED's longer leg (anode) to the other end of the resistor. The shorter leg (cathode) goes toward the negative rail.", "startMs": 0, "endMs": 4500 },
+    { "id": "cue-connect-switch", "text": "Insert the switch between the LED cathode and the negative rail. This will let you turn the circuit on and off.", "startMs": 0, "endMs": 4000 },
+    { "id": "cue-close-switch", "text": "Close the switch. The circuit is now complete — current flows and the LED lights!", "startMs": 0, "endMs": 3500 },
+    { "id": "cue-measure-voltage", "text": "Measure the voltage across the LED with the multimeter. You should see about 2 volts for a red LED.", "startMs": 0, "endMs": 4000 }
+  ],
+  "captions": [
+    { "id": "cue-place-battery", "text": "Battery on power rails: positive to red, negative to blue.", "startMs": 0, "endMs": 4000 },
+    { "id": "cue-connect-resistor", "text": "Resistor from positive rail to breadboard row.", "startMs": 0, "endMs": 4000 },
+    { "id": "cue-connect-led", "text": "LED anode to resistor, cathode toward negative rail.", "startMs": 0, "endMs": 4500 },
+    { "id": "cue-connect-switch", "text": "Switch in series with LED cathode.", "startMs": 0, "endMs": 4000 },
+    { "id": "cue-close-switch", "text": "Close switch — LED lights!", "startMs": 0, "endMs": 3500 },
+    { "id": "cue-measure-voltage", "text": "Measure LED voltage drop (~2V for red LED).", "startMs": 0, "endMs": 4000 }
+  ],
+  "assets": []
+}
