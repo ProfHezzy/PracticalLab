@@ -3,10 +3,16 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
 import { Icon } from "@/components/icon";
 import {
   filtrationDefinition,
+  evaporationDefinition,
+  simpleDistillationDefinition,
+  fractionalDistillationDefinition,
+  decantationDefinition,
+  chromatographyDefinition,
   validateDefinition,
 } from "@practicallab/experiment-schemas";
 import {
@@ -34,11 +40,46 @@ const SimulationStage = dynamic(
   },
 );
 
+type ExperimentId =
+  | "filtration"
+  | "evaporation"
+  | "simple-distillation"
+  | "fractional-distillation"
+  | "decantation"
+  | "chromatography";
+
+const EXPERIMENT_DEFINITIONS = {
+  filtration: filtrationDefinition,
+  evaporation: evaporationDefinition,
+  "simple-distillation": simpleDistillationDefinition,
+  "fractional-distillation": fractionalDistillationDefinition,
+  decantation: decantationDefinition,
+  chromatography: chromatographyDefinition,
+} as const;
+
+const EXPERIMENT_HINTS: Record<ExperimentId, string> = {
+  filtration: "What must line the funnel before the mixture goes in?",
+  evaporation: "What setup is needed above the heat source before heating?",
+  "simple-distillation": "Where must cold water enter the condenser?",
+  "fractional-distillation": "What does the fractionating column do that a simple condenser doesn't?",
+  decantation: "How do you pour without disturbing the settled solids?",
+  chromatography: "Why must the ink dot be above the solvent level?",
+};
+
+function getExperimentId(searchParams: URLSearchParams): ExperimentId {
+  const id = searchParams.get("experiment") as ExperimentId;
+  return id && id in EXPERIMENT_DEFINITIONS ? id : "filtration";
+}
+
 export default function StudentLabPage() {
+  const searchParams = useSearchParams();
+  const experimentId = getExperimentId(searchParams);
+  const definition = EXPERIMENT_DEFINITIONS[experimentId];
+
   const [state, setState] = useState(() => {
     const initial = createInitialState(false);
-    return validateDefinition(filtrationDefinition)
-      ? loadDefinition(initial, filtrationDefinition)
+    return validateDefinition(definition)
+      ? loadDefinition(initial, definition)
       : initial;
   });
   const [hintOpen, setHintOpen] = useState(false);
@@ -211,11 +252,8 @@ export default function StudentLabPage() {
         <section className="lab-heading">
           <div>
             <p className="eyebrow">CHEMISTRY · SEPARATION TECHNIQUES</p>
-            <h1>Filtration</h1>
-            <p>
-              Separate an insoluble solid from a liquid, one careful step at a
-              time.
-            </p>
+            <h1>{definition.title}</h1>
+            <p>{definition.steps[0]?.instruction || "Follow the steps to complete this practical."}</p>
             <span className="lab-review-badge">
               <span aria-hidden="true">i</span> Practice preview · subject
               review pending
@@ -234,15 +272,15 @@ export default function StudentLabPage() {
           <aside className="hint-card" role="status">
             <Icon name="flask" className="hint-flask-icon" />
             <p>
-              <strong>Think like a scientist:</strong> What must line the funnel
-              before the mixture goes in?
+              <strong>Think like a scientist:</strong>{" "}
+              {EXPERIMENT_HINTS[experimentId]}
             </p>
           </aside>
         )}
 
         <section
           className="lab-workspace"
-          aria-label="Filtration experiment workspace"
+          aria-label={`${definition.title} experiment workspace`}
         >
           <div className="workbench-top">
             <div>
@@ -376,7 +414,7 @@ export default function StudentLabPage() {
             <p className="lab-caption" aria-live="polite">
               <span>CAPTION</span>
               {done
-                ? "Filtration separates the insoluble sand from the water."
+                ? definition.captions[0]?.text
                 : caption?.text}
             </p>
             {narrationMessage && (
@@ -429,11 +467,10 @@ export default function StudentLabPage() {
             </span>
             <div>
               <p className="eyebrow">WHAT YOU LEARNED</p>
-              <h2 id="lab-result-title">A filter catches insoluble solids.</h2>
-              <p>
-                Water passes through the paper into the receiving flask while
-                the sand stays behind.
-              </p>
+              <h2 id="lab-result-title">
+                {definition.outcomes[0]?.title || "Experiment completed"}
+              </h2>
+              <p>{definition.outcomes[0]?.description}</p>
             </div>
             <div className="lab-score">
               <strong>{state.score}</strong>

@@ -459,6 +459,27 @@ class LessonVersion(TimestampedModel):
         ]
         ordering = ["-version"]
 
+    def compute_content_hash(self) -> str:
+        """Deterministic content hash for immutable versioned URLs.
+
+        Hashes the canonical published fields so the asset and captions
+        redirect URLs are stable for the lifetime of a published version.
+        """
+        import hashlib
+
+        canonical = "\n".join(
+            [
+                self.title or "",
+                self.content or "",
+                str(self.estimated_minutes),
+                self.safety_notes or "",
+                self.transcript or "",
+                self.captions or "",
+                self.changelog or "",
+            ]
+        )
+        return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
     def save(self, *args, **kwargs):
         if (
             self.pk
@@ -467,6 +488,8 @@ class LessonVersion(TimestampedModel):
             from django.core.exceptions import ValidationError
 
             raise ValidationError("Published lesson versions are immutable.")
+        if not self.content_hash:
+            self.content_hash = self.compute_content_hash()
         super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):

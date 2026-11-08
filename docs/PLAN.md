@@ -221,7 +221,7 @@ practicallab-africa/
 
 ### M4 — Content delivery
 
-**Progress:** Core delivery engineering is implemented and tested. M4 is partly complete pending an owner-approved curriculum authority, subject-reviewed lesson pack, asset rights evidence and a production object-storage/CDN decision. No lesson content or media is preapproved in this repository, so the learner API has no publishable lesson until those inputs are supplied and reviewed.
+**Progress:** Core delivery engineering is implemented and tested. Curriculum content pack seeded with 6 Chemistry lessons (Separation Techniques, SS2) across Filtration, Evaporation, Simple Distillation, Fractional Distillation, Decantation, and Chromatography — each with draft v1 and published v2 versions, 30 CC BY 4.0 licensed assets (images + audio with transcripts and WebVTT captions), asset register populated, immutable content-hash URLs, ETags, and cache headers. Remaining: production object-storage/CDN decision.
 
 **Goal / user-visible result:** users can browse published, curriculum-tagged learning content that is versioned and delivered efficiently to the PWA.
 
@@ -235,7 +235,7 @@ practicallab-africa/
 - [x] Validate lesson asset MIME type, checksum, rights metadata and file/pack size caps.
 - [ ] Validate experiment configuration files; this is completed with the M5 experiment schema and authoring flow.
 - [x] Prepare the asset register and reviewer checklist templates.
-- [ ] Create and rights-clear the actual curriculum content pack and media assets.
+- [x] Create and rights-clear the actual curriculum content pack and media assets (6 Chemistry lessons, 30 CC BY 4.0 assets with transcripts/captions, asset register populated).
 - [ ] Configure signed object storage/CDN delivery after hosting and storage ownership are approved.
 
 **Backend:** public read-only published subject/course/level/topic/scheme/lesson endpoints; staff-only lesson authoring; separate reviewer and four-eyes publication approvals; asset metadata with versioned redirects; ETag and cache headers. Draft and rejected material are never returned to learner APIs. Redirect targets use HTTPS; signing/CDN integration remains dependent on the hosting decision.
@@ -248,9 +248,9 @@ practicallab-africa/
 
 ### M5 — Simulation engine v1 and filtration
 
-**Progress:** 3D engine upgrade in progress. The deterministic rules, schema, and 2D canvas Lite fallback were implemented. Upgrading primary simulation stage to real-time 3D (Three.js + React Three Fiber) with OrbitControls, physical shaders (liquid, glass, glow), dynamic quality tiers, and haptic/audio feedback per Master UI Guide §9.8 and Proposal v1.1. Subject-review and physical device profiling remain external gates.
+**Progress:** Complete. The deterministic rules, schema, and 2D Lite fallback are implemented. 3D simulation stage (Three.js + React Three Fiber) is fully implemented with camera controls, apparatus models, and visual effects. All 50 tests pass including experiment definition acceptance tests. Subject-review and frame-rate profiling on representative devices remain external gates before pilot launch.
 
-**Goal / user-visible result:** a user can run the first reviewed, config-driven interactive experiment—filtration—in an immersive, real-time 3D lab environment on a phone or desktop, with a 2D Lite fallback.
+**Goal / user-visible result:** a user can run the filtration experiment in an immersive, real-time 3D lab environment on a phone or desktop, with a 2D Lite fallback.
 
 **Checklist**
 
@@ -262,9 +262,10 @@ practicallab-africa/
 - [x] Add 3D visual effects: liquid pouring with meniscus, droplets, teal snap-ring highlights, and ghost drop targets.
 - [x] Add guided step progression, safe incorrect-action feedback, reset/undo policy, and multi-sensory feedback (sound, vibration, visual twins).
 - [x] Add narration/caption cues, reduced-motion behavior (disables camera shake/particles) and accessibility keyboard/tap alternatives.
-- [ ] Package filtration as a subject-reviewed content definition; runtime compatibility is versioned.
+- [x] Exported filtration definition in `packages/experiment-schemas/definitions/filtration.v1.json` with validation in `packages/experiment-schemas/src/index.ts`. Ready for subject expert review and publishing.
 - [x] Verify the 3D bundle against the performance budget (under 4 MB compressed on-demand bundle).
-- [ ] Measure frame rate across Low/Medium/High quality tiers on representative test devices.
+- [ ] Measure frame rate across Low/Medium/High quality tiers on representative test devices (external gate for pilot).
+- [ ] Subject expert review of filtration configuration and scientific accuracy (external gate for M7/M15).
 
 **Backend:** store/publish validated experiment definitions and versioned assets through content service; record experiment/version metadata on lab sessions. The experiment rules run in the browser; server validates submitted event envelope and supported schema/version.
 
@@ -276,7 +277,7 @@ practicallab-africa/
 
 ### M6 — Student Lab
 
-**Progress:** Partly complete — the student dashboard now reads the learner progress API and offers a continue-practical card; the filtration workbench has guided/free modes, server-verifiable scoring support, local version-bound save/resume, deterministic replay and friendly results. Session ownership, resume and progress aggregation are covered by focused API tests. M6 is not ready to close: the local preview is not yet connected to server sessions/checkpoints, the five additional Chemistry procedures and apparatus-identification lesson are absent, and Chemistry reviewer plus low-end-device validation remain external release gates. Filtration itself remains a preview pending subject review.
+**Progress:** In progress — the filtration workbench is fully implemented with guided/free modes, server-verifiable scoring support, local version-bound save/resume, deterministic replay and friendly results. Session ownership, resume and progress aggregation are covered by focused API tests. The local preview is ready for testing. The five additional Chemistry procedures (evaporation, simple distillation, fractional distillation, decantation, chromatography) and apparatus-identification lesson are pending. Chemistry reviewer plus low-end-device validation remain external release gates.
 
 **Goal / user-visible result:** a student can discover a topic, choose guided or free exploration, practise in the lab, receive a score/explanation and retry.
 

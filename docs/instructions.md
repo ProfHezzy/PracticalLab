@@ -30,6 +30,36 @@ Before planning, coding or answering anything about the product, read:
 - Start as a well-organised modular monolith (clean internal modules). Do not split into microservices.
 - Containers with Docker, CI/CD with automated tests.
 
+## Development Setup
+
+### Environment Variables
+
+**API Server (apps/api/.env.local):**
+```bash
+DJANGO_SECRET_KEY=dev-secret-key
+DJANGO_DEBUG=1
+DJANGO_CSRF_TRUSTED_ORIGINS="http://localhost:3000,http://localhost:8000,http://127.0.0.1:3000,http://127.0.0.1:8000"
+PUBLIC_WEB_URL=http://localhost:3000
+```
+
+### Starting Servers
+
+**Django API:**
+```bash
+cd apps/api
+python manage.py runserver 127.0.0.1:8000
+```
+
+**Next.js Web:**
+```bash
+cd apps/web
+npm run dev
+```
+
+### CSRF Configuration
+
+`DJANGO_CSRF_TRUSTED_ORIGINS` must include both `localhost:3000` (Next.js dev server) and the Django server ports (`localhost:8000`, `127.0.0.1:8000`). Without this, CSRF token verification fails for cross-origin requests through the Next.js proxy.
+
 ## Engineering standards
 
 - Work in small, reviewable steps. One phase, one feature at a time. Never generate the whole app in one go.

@@ -8,7 +8,9 @@ import { ThemeToggle } from "@/components/theme-toggle";
 
 type RegisterResponse = {
   active_mode?: string;
-  error?: { message?: string };
+  id?: number;
+  username?: string;
+  error?: { code?: string; message?: string; details?: Record<string, string[]> };
 };
 
 export default function RegisterPage() {
