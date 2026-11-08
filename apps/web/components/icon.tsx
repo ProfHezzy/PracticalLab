@@ -116,6 +116,12 @@ const shapes: Record<string, ReactNode> = {
       <path d="M8 8h8M8 12h8M8 16h5" />
     </>
   ),
+  experiments: (
+    <>
+      <circle cx="12" cy="12" r="10" />
+      <path d="M9 12l2 2 4-4" />
+    </>
+  ),
 };
 
 export function Icon({

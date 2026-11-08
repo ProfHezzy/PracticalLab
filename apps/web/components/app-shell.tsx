@@ -19,7 +19,8 @@ type Me = {
 
 const learnerLinks = [
   { href: "/student", label: "Overview", icon: "home" },
-  { href: "/content", label: "Explore labs", icon: "book" },
+  { href: "/student/experiments", label: "Experiments", icon: "experiments" },
+  { href: "/content", label: "Explore lessons", icon: "book" },
   {
     href: "/student/lab?experiment=filtration",
     label: "My lab",
@@ -123,7 +124,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <span className="rail-icon">
                   <Icon
                     name={
-                      item.icon as "home" | "book" | "flask" | "user" | "shield" | "library"
+                      item.icon as "home" | "book" | "flask" | "user" | "shield" | "library" | "experiments"
                     }
                   />
                 </span>
@@ -211,7 +212,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <span>
                   <Icon
                     name={
-                      item.icon as "home" | "book" | "flask" | "user" | "shield" | "library"
+                      item.icon as "home" | "book" | "flask" | "user" | "shield" | "library" | "experiments"
                     }
                   />
                 </span>
@@ -222,6 +223,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                       ? "Home"
                       : item.label === "Library"
                         ? "Library"
+                      : item.label === "Experiments"
+                        ? "Experiments"
                       : item.label === "My lab"
                         ? "Lab"
                         : "Profile"}
